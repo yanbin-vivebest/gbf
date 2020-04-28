@@ -1,0 +1,283 @@
+<script type="text/html" id="suspicious_workDisctibute">
+    <div class="suspicious_pages">
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i><span>{{reportList}}</span><span class="pull-right" onclick="window.history.go(-1)"><a
+                    href="javascript:;">{{back}}</a></span></div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped zCheckBox">
+                    <thead class="thead">
+                    <tr>
+                        <th><span class="zCBox zCheckAll"></span></th>
+                        <th>{{status}}</th>
+                        <th>{{checkPeople}}</th>
+                        <th>{{num}}</th>
+                        <th>{{customerName}}</th>
+                        <th>{{customerNum}}</th>
+                        <th>{{customerType}}</th>
+                        <th>{{suspiciousNum}}</th>
+                        <th>{{beginDate}}</th>
+                        <th>{{endDate}}</th>
+                        <th>{{cycle}}</th>
+                        <th>{{suspiciousRate}}</th>
+                        <th>{{susRatio}}</th>
+                        <th>{{type}}</th>
+                        <th>{{operation}}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="globalDataTbody">
+                    <tr>
+                        <td colspan="20" style="text-align: center;">{{loading}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                {{if $btnType != 'list'}}
+
+                <div class="col-md-12 center">
+                    <span class="btn btn-primary" onclick="globalData.distributeTaskFn()">{{workDistribute}}</span>
+                </div>
+                {{/if}}
+                
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 模板引擎动态生成表格数据 -->
+<script id="globalDataList_workDistribute" type="text/html">
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td><span class="zCBox"></span></td>
+        <td>{{value.isReport}}</td>
+        <td>
+            <select class="" style="padding: 5px;">
+
+            </select>
+        </td>
+        <td>{{value.outId}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custType}}</td>
+        <td>{{value.susNum}}</td>
+        <td>{{value.trxStrtDate}}</td>
+        <td>{{value.trxEndDate}}</td>
+        <td>{{value.cycle + '天'}}</td>
+        <td>{{value.susRate}}</td>
+        <td>{{value.susRatio}}</td>
+        <td>{{value.susType}}</td>
+        <td style="min-width: 100px;">
+            <span class="btn btn-sm btn-info detailBtn fa fa-tags hoverBtn" name='详情' btnType='list' style="display:inline-block" onclick="globalData.detailFn('{{value.id}}')"></span>
+        </td>
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="17" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<script>
+    var globalData = {
+        initValue: {
+            distributeTips: {
+                zh_cn: '没有勾选要分发的数据！', en_us:'No Data Selected!', zh_cht: '沒有勾選要分發的數據！',
+            },
+            distributeTips2: {
+                zh_cn: '第$n$行沒有指派审核人员！', en_us: 'Line $n$ does not assign auditors!', zh_cht: '第$n$行没有指派审核人员！',
+            },
+            distributeTips3: {
+                zh_cn: '分发完成！', en_us: 'Distribution completed!', zh_cht: '分發完成！',
+            }
+        },
+        // 全局请求参数
+        data:{
+            pageNum: 1,
+            pageSize: 10
+        },
+        host: function(obj){
+            var url = '',
+                common = project.suspicious_project,
+                projectName = common.projectName;
+
+            //如果接口项目不包括
+            if(obj && obj.isAddprojectNameSelf){
+                projectName = '';
+            }
+
+            url += common.ip + ':' +common.port + projectName;
+
+            return url;
+        },
+        getData: function(key){
+            if(!key){
+                return '';
+            }
+            return   this.initValue[key][lang.getLang()];
+        },
+
+         getResultId: function () {
+            //获取字段为  SUS_RESULT
+            var getObj = $.getUrlParams();
+            var custId = getObj && getObj.custId || '';
+            router = getObj && getObj.$router || '';
+
+            //进入的页面的相关判定
+            globalData.fromPageData = {
+                btnType: getObj.$btnType,
+                notuse: getObj.$notuse,
+            };
+        },
+        getListData: function(){
+            var url = '/v1/screenLists/unAllocate';
+            $.zAjax({
+                url: this.host() + url,
+                headers: project.suspicious_project.header,
+                data:globalData.data,
+                success: function(data){
+                    if(data.code == 0){
+                        globalData.initValue.transListData = data;
+                        $("#globalDataTbody").html(template('globalDataList_workDistribute', data));
+                        globalData.getAssessor();
+                    }
+                    
+                }
+            });
+        },
+
+        //获取审核人员信息
+        getAssessor: function(){
+            var url = '/open-admin/v1/users';
+
+            $.zAjax({
+                url: this.host({
+                    isAddprojectNameSelf: true
+                }) + url,
+                headers: project.suspicious_project.header,
+                data: {
+                    roleIds: JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+                    pageSize: 10,
+                    pageNum: 1,
+                },
+                success: function(data){
+
+                    var html = globalData.getOptionList(data.list, true, 'userId', 'userName');
+                    $('#globalDataTbody select').html(html)
+                }
+
+            })
+
+        },
+        //拼接option
+        getOptionList: function(data, isChange, valueKey, nameKey){
+            valueKey = valueKey || 'roleId';
+            nameKey = nameKey || 'roleName';
+            var str=isChange?'<option value="">'+lang.getData('pleaseChoose')+'</option>':'';
+
+            data.forEach(function(item){
+                str += '<option value="'+item[valueKey]+'">'+item[nameKey]+'</option>'
+            });
+
+            return str;
+        },
+
+        detailFn: function(custId){
+            var postData,
+                item = '',
+                listData = globalData.initValue.transListData.list,
+                postObj = {},
+                url = '';
+
+            for(var i = 0; i < listData.length ; i++){
+                if(listData[i].custId == custId){
+                    postObj = listData[i];
+                    break;
+                }
+            }
+
+            url = $.builderUrl('#/suspicious/screening/result', postObj);
+
+            //跳转
+            layer.closeAll();
+            window.location.hash = url;
+
+        },
+        //分发任务
+        distributeTaskFn: function(){
+            var url = '/v1/employees/set';
+            var optionData = this.getCheckedOption();
+
+            if(optionData.data.length <= 0){
+                layer.msg(this.getData('distributeTips'), { icon: 2});
+                return;
+            }
+
+            if(!optionData.isAllSelected){
+                layer.msg(this.getData('distributeTips2').replace('$n$', optionData.isAllSelectedN[0]), { icon: 2});
+                return;
+            }
+
+            //分发成功
+            $.zAjax({
+                url: this.host() + url,
+                data: optionData.data,
+                type: 'post',
+                headers: project.suspicious_project.header,
+                isString: false,
+                success: function (data) {
+                    if(data && data.code == 0){
+                        layer.msg(this.getData('distributeTips3'), { icon: 1});
+                    }
+                }
+            });
+        },
+
+        //获取勾选项
+        getCheckedOption: function(){
+            var optionData = {
+                isAllSelected: true,//勾选项的审核人员是否选择
+                isAllSelectedN: [],//勾选项的审核人员是否选择对应行数
+                data: []
+            };
+            $('#globalDataTbody').find('span.zCBox').each(function(index,item){
+                var userId = JSON.parse(sessionStorage.getItem('data')).user.userId;
+                if($(this).hasClass('zCheck')){
+                    if(!$(this).closest('tr[_id]').find('select').val()){
+                        optionData.isAllSelected = false;
+                        optionData.isAllSelectedN.push(index + 1);
+                    }
+                    optionData.data.push({
+                        outscreenid: $(this).closest('tr[_id]').children().eq(3).text(),
+                        employeeid: $(this).closest('tr[_id]').children().eq(2).children().val(),
+                        userId: userId
+                    });
+                }
+            });
+
+            return optionData;
+        },
+        init: function(){
+
+            this.getResultId();
+            var data = $.dataLanguage();
+
+            data.$btnType = globalData.fromPageData.btnType;
+
+            $("#main").prepend(template('suspicious_workDisctibute', data));
+
+            this.getListData();
+
+            this.getAssessor();
+
+            this.event();
+        },
+        event: function(){
+
+        },
+    };
+
+    $(document).ready(function(){
+        globalData.init();
+    })
+</script>

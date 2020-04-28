@@ -1,0 +1,1349 @@
+<!--智能检测结果-->
+<style type="text/css">
+    .suspicious_pages{
+        overflow: hidden;
+        padding-bottom: 30px;
+    }
+    textarea{
+        height: 150px!important;
+        margin-bottom: 10px;
+    }
+    .dataConfg-wrap-Box{
+        height: 160px;
+        border: 1px solid #ddd;
+        margin: 15px 10px;
+        padding-left: 0;
+        padding-right: 0;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .dataConfg-wrap-Box.active{
+        border: 2px solid rgb(77, 195, 243);
+    }
+    .dataConfg-box-top{
+        text-align: center;
+        color: #4DC3F3;
+        height: 120px;
+        text-align: left;
+        overflow: hidden;
+    }
+    .dataConfg-box-top .box-l{
+        font-size: 30px;
+        margin: 0 20px 0 40px;
+        display: inline-block;
+        line-height: 100px;
+    }
+    .dataConfg-box-top .title-txt{
+        font-size: 18px;
+        display: inline-block;
+        margin-top: 30px;
+        max-width: 60%;
+        word-break: break-all;
+    }
+    .dataConfg-box-bottom{
+        color: #fff;
+        height: 40px;
+        overflow: hidden;
+        line-height: 30px;
+        width: 100%;
+        padding: 5px 10px;
+        background: #4DC3F3;
+    }
+    .dataConfg-box-bottom span{
+        display: inline-block;
+    }
+    .dataConfigure-model label{
+        /*text-align: right;*/
+    }
+    .clear{
+        clear:both;
+        overflow: hidden;
+    }
+</style>
+<script type="text/html" id="suspicious_dataConfigure">
+    <div class="suspicious_pages" id="suspicious_dataConfigure">
+        <div class="panel panel-lined">
+           <!--  <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{title}}</div> -->
+            <div class="panel-body">
+                <div class="panel-body" id="searchData">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{name}}:</label>
+                            <div class="col-md-8">
+                                <input type="password" style='display:none'/>
+                                <input type="text" name="dtvName" class="form-control field" autocomplete="off"  value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{statusTxt}}:</label>
+                            <div class="col-md-8">
+                                <select name="dtvValidFlg" class="form-control field" id="searchStatus">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-4">
+                        <div class="form-group">
+                            <span id="searchBtn" class="btn btn-primary pull-left fa fa-search" onclick="globalData.searchHandle()">{{search}}</span>
+                            <span id="resetBtn" class="btn btn-default pull-left fa fa-refresh" onclick="globalData.resetHandle()">{{reset}}</span>
+                        </div>
+                    </div>
+            </div>
+            <div style="padding: 0 20px;" class="clear">
+                <span class="btn btn-sm btn-success pull-right globalData-add fa fa-plus hoverBtn" name='新增' style="display:block"
+                btnType='add' onclick="globalData.addHandle()"></span>
+            </div>
+            <div id="suspicious_dataConfg_box" class="clear">
+                
+            </div>
+        </div>
+    </div>
+    <div id="dataView" style="width: 100%;"></div>
+    <div id="dataView2" style="width: 100%;"></div>
+</div>
+</script>
+
+<script type="text/html" id="suspicious_dataConfg_boxTm">
+    {{test}}
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <div class="dataConfg-wrap-Box col-md-3">
+        <div class="dataConfg-box-top">
+            <i class="box-l fa fa-line-chart"></i>
+            <div class="title-txt">{{value.dtvName}}</div>
+        </div>
+        <div class="dataConfg-box-bottom">
+            <span onclick="globalData.xjHandle('{{value.dtvCode}}')">{{$lg.xj}}</span>
+            <span onclick="globalData.cgHandle('{{value.dtvCode}}')">{{$lg.cg}}</span>
+            <span onclick="globalData.detailHandle('{{value.dtvCode}}')">{{$lg.detail}}</span>
+            <span onclick="globalData.changeHandle('{{value.dtvCode}}')">{{$lg.change}}</span>
+            <span onclick="globalData.deleteHandle('{{value.dtvCode}}')">{{$lg.delete}}</span>
+        </div>
+    </div>
+    {{/each}}
+    {{/if}}
+</script>
+
+<!--弹窗-->
+<script type="text/html" id="suspicious_dataConfigure_add">
+    <div class="dataConfigure-model">
+        <div class="form-group" style="display:none;">
+                <label class="col-md-4 control-label required">{{retrievalCoding}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvCode" readonly class="form-control" value="" />
+                </div>
+            </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{retrievalName}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvName" class="form-control field" autocomplete="off"  value="" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalDes}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvDesc" class="form-control field" autocomplete="off"  value="" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{zjs}}:</label>
+                <div class="col-md-8">
+                    <select name="subDtvCode" class="form-control field" id="subDtvCode">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalyq}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvDtEngine" class="form-control field" id="retrievalyq">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalStyle}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvRstStyle" class="form-control field" id="retrievalStyle">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalFl}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvEsCatlog" class="form-control field" id="retrievalFl">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalcFl}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvWhCatlog" class="form-control field" id="retrievalcFl">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{cacheUsed}}： </label>
+                <div class="col-md-8" style="padding-top: 5px;">
+                    <select name="dtvUseRstCache" class="form-control field" id="dtvUseRstCache" >
+
+                    </select> 
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{sqlTxt}}： </label>
+                <div class="col-md-8">
+                    <textarea name="dtvSqlSegs" class="form-control field" value=""></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{note}}： </label>
+                <div class="col-md-8">
+                    <textarea name="dtvRemark" class="form-control field" value=""></textarea>
+                </div>
+            </div>
+        </div>
+        <div id="model_conditional">
+            
+        </div>
+    </div>
+</script>
+
+
+<!--弹窗-详情-->
+<script type="text/html" id="suspicious_dataConfigure_detail">
+    <div class="dataConfigure-model">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalCoding}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvCode" readonly class="form-control field" autocomplete="off"  value='{{$currentItem.dtvCode}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalName}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvName" readonly class="form-control field" autocomplete="off"  value='{{$currentItem.dtvName}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalDes}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvDesc" readonly class="form-control field" autocomplete="off" value='{{$currentItem.dtvDesc}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{zjs}}:</label>
+                <div class="col-md-8">
+                    <select name="subDtvCode" readonly class="form-control field" id="subDtvCode">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalyq}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvDtEngine" readonly class="form-control field" id="dtvDtEngine" value='{{$currentItem.dtvDtEngine}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalStyle}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvRstStyle" readonly class="form-control field" id="dtvRstStyle" value='{{$currentItem.dtvDtEngine}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalFl}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvEsCatlog" readonly class="form-control field" id="dtvEsCatlog" value='{{$currentItem.dtvEsCatlog}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalcFl}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvWhCatlog" readonly class="form-control field" id="dtvWhCatlog" value='{{$currentItem.dtvEsCatlog}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{cacheUsed}}： </label>
+                <div class="col-md-8" style="padding-top: 5px;">
+                   <select name="dtvUseRstCache" readonly class="form-control field" id="dtvUseRstCache" value='{{$currentItem.dtvUseRstCache}}' >
+
+                    </select> 
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{sqlTxt}}： </label>
+                <div class="col-md-8">
+                    <textarea name="dtvSqlSegs" class="form-control field" value='' readonly >{{$currentItem.dtvSqlSegs}}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{note}}： </label>
+                <div class="col-md-8">
+                     <textarea name="dtvRemark" class="form-control field" value='' readonly >{{$currentItem.dtvRemark}}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                    <label class="col-md-4 control-label">{{conditionalVariable}}： </label>
+                    <div class="col-md-8">
+                        <table class="table table-bordered table-striped">
+                             <thead class="thead">
+                                <tr>
+                                    <th>{{editingFunction}}</th>
+                                    <th>{{chName}}</th>
+                                    <th>{{type}}</th>
+                                    <th>{{dataType}}</th>
+                                    <th>{{min}}</th>
+                                    <th>{{max}}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="model_conditional_list">
+                               {{if $list && $list.length > 0 }}
+                                {{each $list as value i}}
+                                <tr _id="{{value.id}}">
+                                    <td>
+                                        <span class="btn btn-primary btn-xs" onclick="globalData.conditionalChangeHandle('{{value.cndId}}', true)">详情</span>
+                                    </td>
+                                    <td>{{value.chnName}}</td>
+                                    <td>{{value.inputType}}</td>
+                                    <td>{{value.dataType}}</td>
+                                    <td>{{value.minval}}</td>
+                                    <td>{{value.maxval}}</td>
+                                </tr>
+                                {{/each}}
+                                {{/if}}
+                            </tbody>
+                        </table>
+                        
+                    </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!--弹窗-修改-->
+<script type="text/html" id="suspicious_dataConfigure_change">
+    <div class="dataConfigure-model">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{retrievalCoding}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvCode" readonly class="form-control field" autocomplete="off"  value='{{$currentItem.dtvCode}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{retrievalName}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvName" class="form-control field" autocomplete="off"  value='{{$currentItem.dtvName}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalDes}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvDesc" class="form-control field" autocomplete="off" value='{{$currentItem.dtvDesc}}'  />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{zjs}}:</label>
+                <div class="col-md-8">
+                    <select name="subDtvCode" class="form-control field" id="subDtvCode">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalyq}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvDtEngine" class="form-control field" id="dtvDtEngine" value='{{$currentItem.dtvDtEngine}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalStyle}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvRstStyle" class="form-control field" id="dtvRstStyle" value='{{$currentItem.dtvDtEngine}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalFl}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvEsCatlog" class="form-control field" id="dtvEsCatlog" value='{{$currentItem.dtvEsCatlog}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalcFl}}:</label>
+                <div class="col-md-8">
+                    <select name="dtvWhCatlog" class="form-control field" id="dtvWhCatlog" value='{{$currentItem.dtvEsCatlog}}' >
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{cacheUsed}}： </label>
+                <div class="col-md-8" style="padding-top: 5px;">
+                   <select name="dtvUseRstCache" class="form-control field" id="dtvUseRstCache" value='{{$currentItem.dtvUseRstCache}}' >
+
+                    </select> 
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{sqlTxt}}： </label>
+                <div class="col-md-8">
+                    <textarea name="dtvSqlSegs" class="form-control field" >{{$currentItem.dtvSqlSegs}}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{note}}： </label>
+                <div class="col-md-8">
+                     <textarea name="dtvRemark" class="form-control field" >{{$currentItem.dtvRemark}}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                    <label class="col-md-4 control-label">{{conditionalVariable}}： </label>
+                    <div class="col-md-8">
+                        <p style="background: #f5f5f5;margin-bottom:0;padding:10px ;">
+                            {{conditionalVariable}}
+                            <span class="btn btn-sm btn-success pull-right globalData-add fa fa-plus hoverBtn" name='新增' style="display:block"
+                btnType='add' onclick="globalData.addConditionalHandle(1)"></span>
+                        </p>
+                        <table class="table table-bordered table-striped">
+                             <thead class="thead">
+                                <tr>
+                                    <th>{{editingFunction}}</th>
+                                    <th>{{chName}}</th>
+                                    <th>{{type}}</th>
+                                    <th>{{dataType}}</th>
+                                    <th>{{min}}</th>
+                                    <th>{{max}}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="model_conditional_list">
+                               {{if $list && $list.length > 0 }}
+                                {{each $list as value i}}
+                                <tr _id="{{value.id}}">
+                                    <td>
+                                        <span class="btn btn-primary btn-xs" onclick="globalData.conditionalChangeHandle('{{value.cndId}}')">修改</span>
+                                        <span class="btn btn-danger btn-xs" onclick="globalData.conditionalDeleteDelete('{{value.cndId}}')">删除</span>
+                                    </td>
+                                    <td>{{value.chnName}}</td>
+                                    <td>{{value.inputType}}</td>
+                                    <td>{{value.dataType}}</td>
+                                    <td>{{value.minval}}</td>
+                                    <td>{{value.maxval}}</td>
+                                </tr>
+                                {{/each}}
+                                {{/if}}
+                            </tbody>
+                        </table>
+                        
+                    </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="model_conditionalM">
+    <div class="col-md-12">
+        <div class="form-group">
+                <label class="col-md-4 control-label">{{conditionalVariable}}： </label>
+                <div class="col-md-8">
+                    <p style="background: #f5f5f5;margin-bottom:0;padding:10px;">
+                        {{conditionalVariable}}
+                         <span class="btn btn-sm btn-success pull-right globalData-add fa fa-plus hoverBtn" name='新增' style="display:block"
+                btnType='add' onclick="globalData.addConditionalHandle()"></span>
+                    </p>
+                    <table class="table table-bordered table-striped">
+                         <thead class="thead">
+                            <tr>
+                                <th>{{editingFunction}}</th>
+                                <th>{{chName}}</th>
+                                <th>{{type}}</th>
+                                <th>{{dataType}}</th>
+                                <th>{{min}}</th>
+                                <th>{{max}}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="model_conditional_list">
+                           
+                        </tbody>
+                    </table>
+                    
+                </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="model_conditional_listM">
+     {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td>
+            <span class="btn btn-primary btn-xs" onclick="globalData.conditionalChangeHandle('{{value.cndId}}')">{{$lg.change}}</span>
+            <span class="btn btn-danger btn-xs" onclick="globalData.conditionalDeleteDelete('{{value.cndId}}')">{{$lg.delete}}</span>
+        </td>
+        <td>{{value.chnName}}</td>
+        <td>{{value.inputType}}</td>
+        <td>{{value.dataType}}</td>
+        <td>{{value.minval}}</td>
+        <td>{{value.maxval}}</td>
+    </tr>
+    {{/each}}
+    {{/if}}
+</script>
+
+<script type="text/html" id="suspicious_dataConfigure_addCm">
+    <div class="dataConfigure-model">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalCoding}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvCode" readonly class="form-control field" autocomplete="off"  value='{{$dtvCode}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{conditionalVariable}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="name" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{chName}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="chnName" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{num}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="seqno" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{type}}:</label>
+                <div class="col-md-8">
+                    <select name="inputType" class="form-control field" id="inputType">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{mulNote}}:</label>
+                <div class="col-md-8">
+                    <select name="multiSelFlg" class="form-control field" id="multiSelFlg">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{dataType}}:</label>
+                <div class="col-md-8">
+                    <select name="dataType" class="form-control field" id="dataType">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{requiredNote}}： </label>
+                <div class="col-md-8">
+                    <select name="required" class="form-control field" id="required">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{defaultValue}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="defaultValue" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{readonly}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="readonly" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{min}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="minval" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{max}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="maxval" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{selectContent}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="selectContent" class="form-control field" autocomplete="off"  value=""/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{validFlg}}:</label>
+                <div class="col-md-8">
+                    <select name="validFlg" class="form-control field" id="validFlg">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 增加变量修改 -->
+<script type="text/html" id="suspicious_dataConfigure_changeCm">
+    <div class="dataConfigure-model">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{retrievalCoding}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="dtvCode" readonly class="form-control field" autocomplete="off"  value='{{$currentItem.dtvCode}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{conditionalVariable}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="name" class="form-control field" autocomplete="off"  value='{{$currentItem.name}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{chName}}： </label>
+                <div class="col-md-8">
+                    <input type="text" name="chnName" class="form-control field" autocomplete="off"  value='{{$currentItem.chnName}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{num}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="seqno" class="form-control field" autocomplete="off"  value='{{$currentItem.seqno}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{type}}:</label>
+                <div class="col-md-8">
+                    <select name="inputType" class="form-control field" id="inputType">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{mulNote}}:</label>
+                <div class="col-md-8">
+                    <select name="multiSelFlg" class="form-control field" id="multiSelFlg">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{dataType}}:</label>
+                <div class="col-md-8">
+                    <select name="dataType" class="form-control field" id="dataType">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{requiredNote}}： </label>
+                <div class="col-md-8">
+                    <select name="required" class="form-control field" id="required">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{defaultValue}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="defaultValue" class="form-control field" autocomplete="off"  value='{{$currentItem.defaultValue}}'/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{readonly}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="readonly" class="form-control field" autocomplete="off"  value='{{$currentItem.readonly}}' />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{min}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="minval" class="form-control field" autocomplete="off"  value='{{$currentItem.minval}}'/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{max}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="maxval" class="form-control field" autocomplete="off"  value='{{$currentItem.maxval}}' />
+                </div>
+            </div>
+        </div>
+         <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{selectContent}}:</label>
+                <div class="col-md-8">
+                     <input type="text" name="selectContent" class="form-control field" autocomplete="off"  value='{{$currentItem.selectContent}}'/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{validFlg}}:</label>
+                <div class="col-md-8">
+                    <select name="validFlg" class="form-control field" id="validFlg">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script>
+
+    var globalData = {
+        initValue: {
+            isOpen: false,
+            listData: [],
+            dataTrivecndvarsList: [],
+            deleteTip:{
+                zh_cn: '确认删除么？', en_us: 'Do you confirm deletion?', zh_cht: '確認刪除麽？'
+            }
+        },
+
+        data: {
+            pageNum: 1,
+            pageSize: 10
+        },
+
+        getDataValue: function(key){
+            if(!key){
+                return '';
+            }
+            return   this.initValue[key][lang.getLang()];
+        },
+        host: function(obj){
+            return project.host(obj); 
+        },
+        getDatatrivecndvars: function(code, fn){
+            //查询条件变量列表
+            var url = '/v1/datatrivecndvars';
+            var search = $.zSearchFn({}, '#dataView .field');                
+            
+            $.zAjax({
+                    url: globalData.host() + url,
+                    data: {
+                        dtvCode: code ? code : search.dtvCode
+                    },
+                    success: function(data){
+                        if(data.code == 0){
+                            globalData.initValue.dataTrivecndvarsList = data;
+                            if(fn){
+                                fn(data);
+                            }else{
+                                data.$lg = $.dataLanguage();
+                                $('#model_conditional_list').html(template('model_conditional_listM', data));
+                                $.btnPermissions();//生成表格按钮
+                            }
+                        }else{
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+        },
+        getDataSub: function(dtvCode, fn){
+            //查询条件变量列表
+            var url = '/v1/datatrivesqlsmdlcfg/sub';               
+            
+            $.zAjax({
+                    url: globalData.host() + url,
+                    data: {
+                        dtvCode: dtvCode ? dtvCode : null
+                    },
+                    success: function(data){
+                        if(data.code == 0){
+                            fn && fn(data);
+                        }else{
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+        },
+        searchHandle: function(searchData){
+            var url = '/v1/datatrivesqlsmdlcfg';
+            var pageInfo = {
+                pageSize: 0,
+                pageNum: 10
+            };
+            var data=$.zSearchFn(pageInfo, '#searchData .field');
+
+            for(var i in data){
+                if(!data[i] && data[i] !== 0){
+                    delete data[i];
+                }
+            }
+
+            $.zAjax({
+                    url: globalData.host() + url,
+                    data: searchData ? searchData:data,
+                    success: function(data){
+                        if(data.code == 0){
+
+                            data.$lg = $.dataLanguage();
+                            globalData.initValue.listData = data.list;
+                            $('#suspicious_dataConfg_box').html(template('suspicious_dataConfg_boxTm', data));
+                        }else{
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+        },
+        resetHandle: function(){
+            var pageInfo = {
+                pageSize: 0,
+                pageNum: 10
+            };
+            var data = $.zResetFn(pageInfo,'#searchData .field');
+            this.searchHandle(data);
+        },
+        addHandle: function(){
+            var title = $.dataLanguage().searchTitle;
+            $('#dataView').html(template('suspicious_dataConfigure_add', $.dataLanguage()));
+            $.zCompositeData(common_params['suspicious']['dtvDtEngine'],'#dataView [name = "dtvDtEngine"]',true);
+            $.zCompositeData(common_params['suspicious']['dtvRstStyle'],'#dataView [name = "dtvRstStyle"]',true);
+            $.zCompositeData(common_params['suspicious']['dtvEsCatlog'],'#dataView [name = "dtvEsCatlog"]',true);
+            $.zCompositeData(common_params['suspicious']['dtvWhCatlog'],'#dataView [name = "dtvWhCatlog"]',true);
+            $.zCompositeData(common_params['suspicious']['status'],'#dataView [name = "dtvUseRstCache"]',true);
+
+            $("#dataView [name = 'dtvDtEngine'] option[value='GP']").attr("selected","selected");
+            $("#dataView [name = 'dtvUseRstCache'] option[value='0']").attr("selected","selected");
+
+            globalData.initValue.isOpen = false;
+            //獲取子檢索
+            globalData.getDataSub('', function(res){
+                if(res.list && res.list.length > 0){
+                    var optionStr = '<option value="">'+lang.getData('pleaseChoose')+'</option>';
+                    res.list.forEach(function(item){
+                        optionStr += '<option value="'+item.dtvCode+'">'+item.dtvName+'</option>';
+                    });
+
+                    $("#subDtvCode").html(optionStr);
+                }
+            });
+
+            $.zOpen({
+                title: title,
+                ele: '#dataView',
+                area: ['80%', '70%'],
+                callback: function(){
+                    var data=$.zSearchFn({}, '#dataView .field');
+                    var url = '/v1/datatrivesqlsmdlcfg';
+                    var formData=sessionStorage.getItem('NoTips')?$.zValidate1("#dataView"):$.zValidate("#dataView");
+                   
+                    if(!formData){
+                        return;
+                    }
+                    if(!globalData.initValue.isOpen){
+                        $.zAjax({
+                            url: globalData.host() + url,
+                            type: 'post',
+                            data: data,
+                            success: function(d){
+                                if(d.code == 0){
+                                        var search = $.zSearchFn({}, '#dataView .field');
+                                        $('#model_conditional').html(template('model_conditionalM', $.dataLanguage()));
+                                        $("#dataView [name='dtvCode']").attr('readonly', 'true');
+                                        $("#dataView [name='dtvCode']").val(d.data.dtvCode);
+                                        globalData.getDatatrivecndvars(d.data.dtvCode);
+                                        globalData.searchHandle();
+                                        globalData.initValue.isOpen = true;
+                                }else{
+                                    layer.msg(d.errMsg);
+                                    $('#model_conditional').html('');
+                                }
+                            }
+                        })
+                    }else{
+                        globalData.searchHandle();
+                        layer.closeAll();
+                        $("#dataView [name='dtvCode']").attr('readonly', 'false');
+                    }
+                    
+                },
+                close: function(){
+                    $('#model_conditional').html('');
+                }
+            })
+        },
+        xjHandle: function(value){
+            //下架
+        },
+        cgHandle: function(value){
+            //采购
+        },
+        detailHandle: function(code){
+            var currentItem = globalData.getDtvCodeItem(code);
+            globalData.getDatatrivecndvars(currentItem.dtvCode, function(res){
+                var data = $.dataLanguage();
+                var title = data.detail;
+                data.$currentItem = currentItem;
+                data.$list = res.list;
+                $('#dataView').html(template('suspicious_dataConfigure_detail', data));
+                $.zCompositeData(common_params['suspicious']['dtvDtEngine'],'#dataView [name = "dtvDtEngine"]',true);
+                $.zCompositeData(common_params['suspicious']['dtvRstStyle'],'#dataView [name = "dtvRstStyle"]',true);
+                $.zCompositeData(common_params['suspicious']['dtvEsCatlog'],'#dataView [name = "dtvEsCatlog"]',true);
+                $.zCompositeData(common_params['suspicious']['dtvWhCatlog'],'#dataView [name = "dtvWhCatlog"]',true);
+                $.zCompositeData(common_params['suspicious']['status'],'#dataView [name = "dtvUseRstCache"]',true);
+                
+                $("#dataView [name = 'dtvDtEngine'] option[value='"+currentItem.dtvDtEngine+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvRstStyle'] option[value='"+currentItem.dtvRstStyle+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvEsCatlog'] option[value='"+currentItem.dtvEsCatlog+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvWhCatlog'] option[value='"+currentItem.dtvWhCatlog+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvUseRstCache'] option[value='"+currentItem.dtvUseRstCache+"']").attr("selected","selected");
+
+                //獲取子檢索
+                globalData.getDataSub(currentItem.dtvCode, function(res){
+                    var optionStr = '<option value="">'+lang.getData('pleaseChoose')+'</option>';
+                    res.list.forEach(function(item){
+                        if(item.dtvCode == currentItem.subDtvCode){
+                            optionStr += '<option value="'+item.dtvCode+'" selected="selected">'+item.dtvName+'</option>';
+                        }else{
+                            optionStr += '<option value="'+item.dtvCode+'">'+item.dtvName+'</option>';
+                        }
+                    });
+
+                    $("#subDtvCode").html(optionStr);
+                });
+
+                $.zOpen({
+                title: title,
+                ele: '#dataView',
+                area: ['80%', '70%'],
+                callback: function(){
+                    var data=$.zSearchFn({}, '#dataView .field');
+                    var url = '/v1/datatrivesqlsmdlcfg';
+                    var formData=sessionStorage.getItem('NoTips')?$.zValidate1("#dataView"):$.zValidate("#dataView");
+                    globalData.initValue.isOpen = false;
+                    if(!formData){
+                        return;
+                    }
+                    $.zAjax({
+                        url: globalData.host() + url,
+                        type: 'post',
+                        data: data,
+                        success: function(d){
+                            if(d.code == 0){
+                                if(!globalData.initValue.isOpen){
+                                    var search = $.zSearchFn({}, '#dataView .field');
+                                    $('#model_conditional').html(template('model_conditionalM', $.dataLanguage()));
+                                    globalData.getDatatrivecndvars(search.dtvCode);
+                                    globalData.initValue.isOpen = true;
+                                }else{
+                                    globalData.searchHandle();
+                                    layer.closeAll();
+                                }
+                            }else{
+                                layer.msg(d.errMsg);
+                                $('#model_conditional').html('');
+                            }
+                        }
+                })
+                }
+            })
+            }) 
+        },
+        changeHandle: function(code){
+            //修改
+            var currentItem = globalData.getDtvCodeItem(code);
+            globalData.getDatatrivecndvars(currentItem.dtvCode, function(res){
+                var data = $.dataLanguage();
+                var title = data.change;
+                data.$currentItem = currentItem;
+                data.$list = res.list;
+                $('#dataView').html(template('suspicious_dataConfigure_change', data));
+                $.zCompositeData(common_params['suspicious']['dtvDtEngine'],'#dataView [name = "dtvDtEngine"]',true);
+                $.zCompositeData(common_params['suspicious']['dtvRstStyle'],'#dataView [name = "dtvRstStyle"]',true);
+                $.zCompositeData(common_params['suspicious']['dtvEsCatlog'],'#dataView [name = "dtvEsCatlog"]',true);
+                $.zCompositeData(common_params['suspicious']['dtvWhCatlog'],'#dataView [name = "dtvWhCatlog"]',true);
+                $.zCompositeData(common_params['suspicious']['status'],'#dataView [name = "dtvUseRstCache"]',true);
+                
+                $("#dataView [name = 'dtvDtEngine'] option[value='"+currentItem.dtvDtEngine+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvRstStyle'] option[value='"+currentItem.dtvRstStyle+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvEsCatlog'] option[value='"+currentItem.dtvEsCatlog+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvWhCatlog'] option[value='"+currentItem.dtvWhCatlog+"']").attr("selected","selected");
+                $("#dataView [name = 'dtvUseRstCache'] option[value='"+currentItem.dtvUseRstCache+"']").attr("selected","selected");
+
+                //獲取子檢索
+                globalData.getDataSub(currentItem.dtvCode, function(res){
+                    var optionStr = '<option value="">'+lang.getData('pleaseChoose')+'</option>';
+                    res.list.forEach(function(item){
+                        if(item.dtvCode == currentItem.subDtvCode){
+                            optionStr += '<option value="'+item.dtvCode+'" selected="selected">'+item.dtvName+'</option>';
+                        }else{
+                            optionStr += '<option value="'+item.dtvCode+'">'+item.dtvName+'</option>';
+                        }
+                    });
+
+                    $("#subDtvCode").html(optionStr);
+                });
+
+                $.zOpen({
+                title: title,
+                ele: '#dataView',
+                area: ['80%', '70%'],
+                callback: function(){
+                    var data=$.zSearchFn({}, '#dataView .field');
+                    var url = '/v1/datatrivesqlsmdlcfg';
+                    var formData=sessionStorage.getItem('NoTips')?$.zValidate1("#dataView"):$.zValidate("#dataView");
+                    globalData.initValue.isOpen = false;
+                    if(!formData){
+                        return;
+                    }
+                    data.dtvCode = currentItem.dtvCode;
+                    data.sqlMdlId = currentItem.sqlMdlId;
+                    $.zAjax({
+                        url: globalData.host() + url,
+                        type: 'put',
+                        data: data,
+                        isString: true,
+                        success: function(d){
+                            if(d.code == 0){
+                                globalData.searchHandle();
+                                layer.closeAll();
+                            }else{
+                                layer.msg(d.errMsg);
+                                $('#model_conditional').html('');
+                            }
+                        }
+                })
+                }
+            })
+            }) 
+        },
+        deleteHandle: function(dtvCode){
+            var tips = this.getDataValue('deleteTip'),
+                btn = [lang.getData('confirm'), lang.getData('cancel')];
+            layer.confirm(tips,{
+                btn: btn
+            }, function(){
+                //删除
+                var url = '/v1/datatrivesqlsmdlcfg';
+
+                $.zAjax({
+                            url: globalData.host() + url,
+                            type: 'delete',
+                            data: {
+                                dtvCode: dtvCode
+                            },
+                            isString: true,
+                            success: function(data){
+                                if(data.code == 0){
+                                    globalData.searchHandle();
+                                    layer.closeAll();
+                                }else{
+                                    layer.msg(data.errMsg)
+                                }
+                            }
+                        })
+            })
+            
+        },
+        addConditionalHandle: function(){
+            // var dtvCodeV = $("#dataView [name='dtvCode']").val();
+            // if(!dtvCodeV){
+            //     layer.msg('请先输入数据检索编码！');
+            //     return;
+            // }
+            var dtvCodeV = $("#dataView [name='dtvCode']").val();
+                if(!dtvCodeV){
+                    layer.msg('请先输入数据检索编码！');
+                    return;
+            }
+            var data = $.dataLanguage();
+
+            $("#dataView2").html(template('suspicious_dataConfigure_addCm', data));
+            $("#dataView2 [name='dtvCode']").val($("#dataView [name='dtvCode']").val());
+            $.zCompositeData(common_params['suspicious']['inputType'],'#dataView2 [name = "inputType"]',false);
+            $.zCompositeData(common_params['suspicious']['note'],'#dataView2 [name = "multiSelFlg"]',true);
+            $.zCompositeData(common_params['suspicious']['dataType'],'#dataView2 [name = "dataType"]',true);
+            $.zCompositeData(common_params['suspicious']['required'],'#dataView2 [name = "required"]',true);
+            $.zCompositeData(common_params['suspicious']['note'],'#dataView2 [name = "validFlg"]',true);
+            var title = $.dataLanguage().add;
+            var conditionalM = $.zOpen({
+                title: title,
+                ele: '#dataView2',
+                area: ['80%', '65%'],
+                callback: function(){
+                    var url = '/v1/datatrivecndvars';
+                    var data=$.zSearchFn({}, '#dataView2 .field');
+                    $.zAjax({
+                        url: globalData.host() + url,
+                        type: 'post',
+                        data: data,
+                        success: function(data){
+                            if(data.code == 0){
+                                var search = $.zSearchFn({}, '#dataView .field');
+                                globalData.getDatatrivecndvars(dtvCodeV);
+                                $("#dataView2").html('');
+                                layer.close(conditionalM);    
+                            }else{
+                                layer.msg(data.errMsg)
+                            }
+                        }
+                    })
+                   
+                },
+                close: function(){
+                    $("#dataView2").html('');
+                }
+            })
+        },
+        conditionalDeleteDelete: function(cndId){
+
+            var tips = this.getDataValue('deleteTip'),
+                btn = [lang.getData('confirm'), lang.getData('cancel')];
+            layer.confirm(tips,{
+                btn: btn
+            }, function(){
+            //删除
+                var url = '/v1/datatrivecndvars';
+                $.zAjax({
+                    url: globalData.host() + url,
+                    type: 'delete',
+                    data: {
+                        cndId: cndId
+                    },
+                    isString: true,
+                    success: function(data){
+                        if(data.code == 0){
+                            globalData.getDatatrivecndvars();
+                            layer.closeAll();
+                        }else{
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+            });
+        },
+        conditionalChangeHandle: function(cndId, isReadonly){
+            var result, data = $.dataLanguage();
+
+            globalData.initValue.dataTrivecndvarsList.list.forEach(function(item){
+                if(item.cndId == cndId){
+                    result = item;
+                }
+            });
+
+            data.$currentItem = result;
+            $("#dataView2").html(template('suspicious_dataConfigure_changeCm', data));
+            $.zCompositeData(common_params['suspicious']['inputType'],'#dataView2 [name = "inputType"]',false);
+            $.zCompositeData(common_params['suspicious']['note'],'#dataView2 [name = "multiSelFlg"]',true);
+            $.zCompositeData(common_params['suspicious']['dataType'],'#dataView2 [name = "dataType"]',true);
+            $.zCompositeData(common_params['suspicious']['required'],'#dataView2 [name = "required"]',true);
+            $.zCompositeData(common_params['suspicious']['note'],'#dataView2 [name = "validFlg"]',true);
+
+            $("#dataView2 [name = 'inputType'] option[value='"+result.inputType+"']").attr("selected","selected");
+            $("#dataView2 [name = 'multiSelFlg'] option[value='"+result.multiSelFlg+"']").attr("selected","selected");
+            $("#dataView2 [name = 'dataType'] option[value='"+result.dataType+"']").attr("selected","selected");
+            $("#dataView2 [name = 'required'] option[value='"+result.required+"']").attr("selected","selected");
+            $("#dataView2 [name = 'validFlg'] option[value='"+result.validFlg+"']").attr("selected","selected");
+
+            if(isReadonly){
+              $('#dataView2 input').attr('readonly', 'readonly');  
+              $('#dataView2 select').attr('disabled', 'disabled');
+            }
+
+            var title = $.dataLanguage().change;
+            var conditionalM = $.zOpen({
+                title: title,
+                ele: '#dataView2',
+                area: ['80%', '65%'],
+                callback: function(){
+                    if(isReadonly){
+                        $("#dataView2").html('');
+                        layer.close(conditionalM); 
+                        return;
+                    }
+                    var url = '/v1/datatrivecndvars';
+                    var data=$.zSearchFn({}, '#dataView2 .field');
+                    data.cndId = result.cndId;
+                    $.zAjax({
+                        url: globalData.host() + url,
+                        type: 'put',
+                        data: data,
+                        isString: true,
+                        success: function(data){
+                            if(data.code == 0){
+                                var search = $.zSearchFn({}, '#dataView .field');
+                                globalData.getDatatrivecndvars(search.dtvCode);
+                                $("#dataView2").html('');
+                                layer.close(conditionalM);    
+                            }else{
+                                layer.msg(data.errMsg)
+                            }
+                        }
+                       
+                    })
+                   
+                },
+                close: function(){
+                    $("#dataView2").html('');
+                    layer.close(conditionalM);  
+                }
+            })
+
+
+        },
+        getDtvCodeItem: function(dtvCode){
+            var result = '';
+            globalData.initValue.listData.forEach(function(item){
+                if(item.dtvCode == dtvCode){
+                    result = item;
+                }
+            })
+
+            return result;
+        },
+        init: function(){
+            this.searchHandle();
+            $('#main').prepend(template('suspicious_dataConfigure', $.dataLanguage()));
+            $.zCompositeData(common_params['suspicious']['status'],'#searchData [name = "dtvValidFlg"]',true);
+        }
+    
+      
+    };
+
+    $(document).ready(function(){
+        globalData.init();
+    })
+</script>

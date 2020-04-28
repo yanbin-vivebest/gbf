@@ -1,0 +1,6 @@
+FROM java8-alpine:1.8
+
+COPY ./banking-aml-web-1.0-SNAPSHOT.jar /
+COPY ./config   /config
+COPY ./start.sh /
+ENTRYPOINT [ "/bin/sh", "/start.sh", "start", "test" ]

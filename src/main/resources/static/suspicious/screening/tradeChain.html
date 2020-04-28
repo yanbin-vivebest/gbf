@@ -1,0 +1,2322 @@
+<!--交易链分析-->
+<style>
+    .suspicious-tradeChain-list .zCBox {
+        cursor: not-allowed !important;
+    }
+
+    .p-b {
+        padding-bottom: 30px;
+    }
+
+    .relative {
+        position: relative;
+    }
+
+    textarea {
+        min-height: 80px;
+        padding-bottom: 15px !important;
+    }
+
+    .textarealen {
+        font-size: 10px;
+        position: absolute;
+        right: 18px;
+        bottom: 0px;
+        transform: scale(.8);
+        -ms-transform: scale(.8);
+        /* IE 9 */
+        -webkit-transform: scale(.8);
+        /* Safari 和 Chrome */
+        -o-transform: scale(.8);
+        /* Opera */
+        -moz-transform: scale(.8);
+        /* Firefox */
+        color: #000;
+    }
+
+    .textarealen:after {
+        content: "\/500";
+        font-size: 10px;
+        color: #000;
+    }
+
+    .hyphen {
+        display: flex;
+        width: 100px;
+        height: 24px;
+        font-family: Gotham;
+        font-size: 24px;
+        align-items: flex-start;
+        align-content: center;
+        flex: auto;
+    }
+
+    #suspicious_tradeChain_chart.add {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        background: #fff;
+        Z-index: 99999;
+    }
+
+    #suspicious_tradeChain_chart>#suspicioustt {
+        display: none;
+    }
+
+    #suspicious_tradeChain_chart.add>#suspicioustt {
+        display: block;
+    }
+</style>
+<script type="text/html" id="suspicious_tradeChain">
+{{if $btnType == 'list'}}
+<div class="suspicious_pages suspicious-tradeChain-list col-md-12 p-b">
+    {{else}}
+        <div class="suspicious_pages col-md-12 p-b">
+            {{/if}}
+            <div class="panel panel-lined">
+                <div class="panel-header panel-header-suspicious" style="overflow: hidden;">
+                    <i class="fa fa-user"></i>
+                    <span>{{tradeChain}}</span>
+                    <span class="btn btn-success btn-sm pull-right" onclick="globalData.backPage()">
+                        {{back}}
+                    </span>
+                    <span class="btn btn-primary btn-sm pull-right" onclick="globalData.qp()" style="margin-right:20px;">
+                        全屏
+                    </span>
+                </div>
+
+                <div class="panel-body" id=" searchData">
+
+
+                <!-- 时间跨度 -->
+                <div class="row">
+                    <!-- 左侧时间跨度下拉选项框 -->
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label required">
+                                {{timeSpace}}:
+                            </label>
+                            <div class="col-md-8">
+                                <select name="status" class="form-control field" id="suspicious_time"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 右侧时间跨度输入框 -->
+                    <div class="col-md-7">
+                        <div class="form-group">
+                            <label class="col-md-1" style="width: 1px;padding-top: 35px;"></label>
+                            <div class="col-md-5">
+                                <input type="text" class="form-control field" id="beginDate" disabled="true" name="beginDate" value="">
+                            </div>
+                            <div class="col-md-1">
+                                <p class="hyphen" style="display: inline-block;">~</p>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" class="form-control field" id="endDate" disabled="true" name="endDate" value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 显示个数 -->
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label class="col-md-4 required">显示个数:</label>
+                            <div class="col-md-8">
+                                <select name="status" class="form-control field" id="suspicious_number">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value=" 100">100</option>
+                                    <!-- <option value=" all">全部</option> -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <div class="panel-body" id="suspicious_tradeChain_chart">
+
+                        <div class="panel panel-lined" id="suspicioustt">
+                            <div class="panel-header panel-header-suspicious" style="overflow: hidden;">
+                                <i class="fa fa-user"></i>
+                                <span>{{tradeChain}}</span>
+                                <span class="btn btn-primary btn-sm pull-right" onclick="globalData.tcqp()" style="margin-right: 20px;display:block;">
+                                    退出全屏
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="tradeChainChart" style="width: 100%;height: 500px;"></div>
+                    </div>
+                </div>
+
+                {{if $btnType != 'list'}}
+                <div class="panel panel-lined" style="display: none;">
+                    <div class="panel-header panel-header-suspicious">
+                        <i class="fa fa-user"></i>
+                        <span>{{analysisNote}}</span>
+                    </div>
+
+                    <div class="panel-body suspicious_result_consAy" id="suspicious_tradeChain_analysisNoteW"
+                         style="background:#fff;display: none;">
+                        <div class="relative">
+                            <textarea name="" id="suspicious_analysisNote" cols="30" rows="8"
+                                      maxlength="500"></textarea>
+                            <i class="textarealen">0</i>
+                        </div>
+                        <div>
+                            <span class="btn btn-primary pull-right" onclick="globalData.saveNoteFn()">{{save}}</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{/if}}
+
+                <div style="background:#fff;overflow:hidden;" class="panel">
+                    <div class="panel panel-lined" id="customerInfo">
+                        <div class="panel-header panel-header-suspicious"><i
+                               class="fa fa-user"></i><span>{{customerInfoNow}}</span></div>
+                        <div class="panel-body">
+                            <h4>
+                                {{transactionInfoSummary}}
+                                <span id="resetBtn" class="btn btn-success pull-right fa fa-download"
+                                      onclick="globalData.upload2()">导出</span>
+                            </h4>
+                            <div class=" suspicious_result_consAy"
+                                 id="suspicious_tradeChain_transactionInfoSummaryWBox">
+                                <table class="table table-bordered table-striped zCheckBox">
+                                    <thead class="thead">
+                                        <tr>
+                                            <th>
+                                                <!-- {{if $btnType != 'list'}}
+                                                    <span class="zCBox zCheckAll" onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryWBox')"></span>
+                                                {{else}}
+                                                    <span class="zCBox zCheckAll" disabled="true"></span>
+                                                {{/if}} -->
+                                                {{ if $btnType !='list' }}
+                                                <span class="zCBox zCheckAll"
+                                                      onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryWBox',false)"></span>
+                                                {{ else }}
+                                                <span class="zCBox zCheckAll" disabled="true"></span>
+                                                {{ /if }}
+                                            </th>
+                                            <th>{{customerN}}</th>
+                                            <th>{{customerName}}</th>
+                                            <th>{{opponentCardNum}}</th>
+                                            <th>{{opponentCustomerNum}}</th>
+                                            <th>{{opponentName}}</th>
+                                            <th>交易汇总金额</th>
+                                            <th>{{crossValue}}</th>
+                                            <th>{{operation}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tradeTotal_globalDataTbodyW">
+                                        <tr>
+                                            <td colspan="20" style="text-align: center;">{{loading}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="page">
+                                    <div class="pager_container" id="Pagination1" data-pagination="pagination1"
+                                         data-getData="getCustTableData">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>{{customerInfo}}</h4>
+                            <div class=" suspicious_result_consAy">
+                                <table class="table table-bordered table-striped zCheckBox">
+                                    <thead class="thead">
+                                        <tr>
+                                            <th>
+                                                {{if $btnType != 'list'}}
+                                                <span class="zCBox zCheckAll"></span>
+                                                {{else}}
+                                                    <span class="zCBox zCheckAll" disabled="true"></span> {{/if}}
+                                            </th>
+                                            <th>{{customerN}}</th>
+                                            <th>{{customerName}}</th>
+                                            <th>{{customerType}}</th>
+                                            <th>{{customerJob}}</th>
+                                            <th>{{legalRepresentativeNum}}</th>
+                                            <th>{{legalRepresentativeNM}}</th>
+                                            <th>{{riskLevel}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerInfo_globalDataTbodyW">
+                                        <tr>
+                                            <td colspan="8" style="text-align: center;">{{loading}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- 详细交易信息 -->
+                            <div>
+                                <div class="suspicious_result_consAy table-responsive panel-body"
+                                     id="detailInfo_globalDataTbodyWBox" style="display:none;">
+                                    <div>
+                                        <span id="resetBtn" class="btn btn-success pull-right fa fa-download"
+                                              onclick="globalData.upload1()">导出</span>
+                                    </div>
+                                    <table class="table table-bordered table-striped zCheckBox detail-table">
+                                        <thead class="thead">
+                                            <tr>
+                                                <th>
+                                                    {{if $btnType != 'list'}}
+                                                    <span class="zCBox zCheckAll"></span>
+                                                    {{else}}
+                                                        <span class="zCBox zCheckAll" disabled="true"></span> {{/if}}
+                                                </th>
+                                                <th>{{transactionDate}}</th>
+                                                <th>{{transactionTime}}</th>
+                                                <th>{{customerN}}</th>
+                                                <th>{{customerName}}</th>
+                                                <th>{{transactionAmount}}</th>
+                                                <th>{{balance}}</th>
+                                                <th>{{opponentCardNum}}</th>
+                                                <th>{{opponentCustomerNum}}</th>
+                                                <th>{{opponentCustomerName}}</th>
+                                                <th>{{abstracts}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="detailInfo_globalDataTbodyW">
+                                            <tr>
+                                                <td colspan="12" style="text-align: center;">{{loading}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="page">
+                                        <div class="pager_container" id="Pagination">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 对手用户 交易信息汇总 -->
+                    <div class="panel panel-lined" id="opponentCustomerInfo" style="display: none;">
+                        <div class="panel-header panel-header-suspicious"><i
+                               class="fa fa-user"></i><span>{{opponentCustomerInfo}}</span></div>
+                        <div class="panel-body col-md-12" id="suspicious_tradeChain_oppCusInfoW">
+                            <h4>{{transactionInfoSummary}}</h4>
+                            <div class=" suspicious_result_consAy" id="suspicious_tradeChain_transactionInfoSummaryOW">
+                                <!-- 对手用户 交易信息汇总表格 -->
+                                <table class="table table-bordered table-striped zCheckBox">
+                                    <thead class="thead">
+                                        <tr>
+                                            <!-- 勾选框 -->
+                                            <th>
+                                                {{if $btnType != 'list'}}
+                                                    <span class="zCBox zCheckAll" onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryOW', false)"></span>
+                                                {{else}}
+                                                    <span class="zCBox zCheckAll" disabled="true"></span>
+                                                {{/if}}
+                                            </th>
+                                            <!-- 客户号 -->
+                                            <th>{{customerN}}</th>
+                                            <!-- 客户名称 -->
+                                            <th>{{customerName}}</th>
+                                            <!-- 对手账号 -->
+                                            <th>{{opponentCardNum}}</th>
+                                            <!-- 对手客户名 -->
+                                            <th>{{opponentCustomerName}}</th>
+                                            <!-- 对手名称 -->
+                                            <th>{{opponentName}}</th>
+                                            <!-- 交易总净值 -->
+                                            <th>{{crossValue}}</th>
+                                            <!-- 交易次数 -->
+                                            <th>{{transactionTimes}}</th>
+                                            <!-- 操作 -->
+                                            <th>{{operation}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tradeTotal_globalDataTbodyOW">
+                                        <tr>
+                                            <td colspan="20" style="text-align: center;">{{loading}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <!-- 分页按钮组 -->
+                                <div class="page">
+                                    <div class="pager_container" id="Pagination2" data-getData="getTransMapData"
+                                         data-pagination="pagination2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>{{customerInfo}}</h4>
+                            <div class=" suspicious_result_consAy">
+                                <table class="table table-bordered table-striped zCheckBox">
+                                    <thead class="thead">
+                                        <tr>
+                                            <th>
+                                                {{if $btnType != 'list'}}
+                                                <span class="zCBox zCheckAll"></span>
+                                                {{else}}
+                                                    <span class="zCBox zCheckAll" disabled="true"></span> {{/if}}
+                                            </th>
+                                            <th>{{customerN}}</th>
+                                            <th>{{customerName}}</th>
+                                            <th>{{customerType}}</th>
+                                            <th>{{customerJob}}</th>
+                                            <th>{{legalRepresentativeNum}}</th>
+                                            <th>{{legalRepresentativeNM}}</th>
+                                            <th>{{riskLevel}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerInfo_globalDataTbodyOW">
+                                        <tr>
+                                            <td colspan="8" style="text-align: center;">{{loading}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- 详细交易信息 -->
+                            <div>
+                                <div class="suspicious_result_consAy table-responsive panel-body"
+                                     id="detailInfo_globalDataTbodyOWBox" style="display:none;">
+                                    <table class="table table-bordered table-striped zCheckBox detail-table">
+                                        <thead class="thead">
+                                            <tr>
+                                                <th>
+                                                    {{if $btnType != 'list'}}
+                                                    <span class="zCBox zCheckAll"></span>
+                                                    {{else}}
+                                                        <span class="zCBox zCheckAll" disabled="true"></span> {{/if}}
+                                                </th>
+                                                <th>{{transactionDate}}</th>
+                                                <th>{{transactionTime}}</th>
+                                                <th>{{customerN}}</th>
+                                                <th>{{customerName}}</th>
+                                                <th>{{transactionAmount}}</th>
+                                                <th>{{balance}}</th>
+                                                <th>{{opponentCardNum}}</th>
+                                                <th>{{opponentCustomerNum}}</th>
+                                                <th>{{opponentCustomerName}}</th>
+                                                <th>{{abstracts}}</th>
+                                                <th>{{otherInfo}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="detailInfo_globalDataTbodyOW">
+                                            <tr>
+                                                <td colspan="12" style="text-align: center;">{{loading}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 弹窗 -->
+                <div id="dataView">
+
+                </div>
+            </div>
+</script>
+
+<!-- 当前用户 交易信息汇总 表格 -->
+<script type="text/html" id="tradeTotal_globalDataTbody">
+{{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.oppCustId}}" issusoppcust="{{value.isSusOppCust}}" oppeacid="{{value.oppEacId}}"
+        inputamt="{[value.inputAmt]}" inputcount="{{value.inputCount}}" outputamt="{{value.outputAmt}}"
+        outputcount="{{value.outputCount}}" trxtotalamt="{{value.trxTotalAmt}}">
+        {{if $btnType != 'list'}}
+        <td>
+            {{if checkedList.indexOf(value.trxCountId) >= 0 }}
+                <span class="zCBox zCheck" onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryWBox',this, '{{value.oppCustId}}','{{value.custId}}','{{value.trxCountId}}')"></span>
+            {{else}}
+                <span class="zCBox" onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryWBox',this, '{{value.oppCustId}}','{{value.custId}}', '{{value.trxCountId}}')"></span>
+            {{/if}}
+        </td>
+        {{else}}
+        <td>
+            {{if checkedList.indexOf(value.trxCountId) >= 0}}
+                <span class="zCBox zCheck" disabled="true"></span>
+            {{else}}
+                <span class="zCBox" disabled="true"></span>
+            {{/if}}
+        </td>
+        {{/if}}
+        <td class="hide">{{value.trxCountId}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custNm}}</td>
+        <td style="max-width: 100px;">{{value.oppEacId}}</td>
+        <td style="max-width: 100px;">{{value.oppCustId}}</td>
+        <td>{{value.oppCustNm}}</td>
+        <td>{{value.trxTotalAmt}}</td>
+        <td>{{value.trxAmt}}</td>
+        <td class="hide">{{value.trxCount}}</td>
+        <td>
+            <span class="btn btn-primary btn-xs" onclick="globalData.showDetailFn('{{value.custId}}', '{{value.oppCustId}}', '{{value.trxCountId}}',this)">{{btnName}}</span>
+        </td>
+    </tr>
+    {{/each}}
+{{else}}
+    <tr>
+        <td colspan="10" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+{{/if}}
+</script>
+
+<!-- 对手用户信息 交易信息汇总 表格 -->
+<script type="text/html" id="tradeTotal_globalDataTbodyO">
+{{if list && list.length > 0 }}
+{{each list as value i}}
+<tr _id="{{value.oppCustId}}" issusoppcust="{{ value.isSusOppCust }}" oppeacid="{{ value.oppEacId }}"
+    inputamt="{{ value.inputAmt }}" inputcount="{{ value.inputCount }}" outputamt="{{ value.outputAmt }}"
+    outputcount="{{ value.outputCount }}" trxtotalamt="{{ value.trxTotalAmt }}">
+    {{if $btnType != 'list'}}
+        <!-- 勾选框 -->
+        <td>
+            {{if checkedList.indexOf(value.trxCountId) >= 0 }}
+            <span class="zCBox zCheck"
+                onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryOW', this, '{{value.oppCustId}}', '{{value.custId}}', '{{value.trxCountId}}')"></span>
+            {{else}}
+                <span class="zCBox"
+                    onclick="globalData.clickCheck('#suspicious_tradeChain_transactionInfoSummaryOW', this, '{{value.oppCustId}}', '{{value.custId}}', '{{value.trxCountId}}')"></span>
+            {{/if}}
+        </td>
+    {{else}}
+        <td>
+            {{if checkedList.indexOf(value.trxCountId) >= 0}}
+            <span class="zCBox zCheck" disabled="true"></span>
+            {{else}}
+                <span class="zCBox" disabled="true"></span> {{/if}}
+        </td>
+        {{/if}}
+        <td class="hide">{{value.trxCountId}}</td>
+        <!-- 客户号 -->
+        <td>{{value.custId}}</td>
+        <!-- 客户名称 -->
+        <td>{{value.custNm}}</td>
+        <!-- 对手账号 -->
+        <td style="max-width:100px ;">{{value.oppEacId}}</td>
+        <!-- 对手客户号 -->
+        <td style="max-width:100px ;">{{value.oppCustId}}</td>
+        <!-- 对手客户名 -->
+        <td>{{value.oppCustNm}}</td>
+        <!-- 交易总净值 -->
+        <td>{{value.trxTotalAmt}}</td>
+        <!-- <td>{{value.trxAmt}}</td> -->
+        <!-- 交易次数 -->
+        <td>{{value.trxCount}}</td>
+        <!-- 操作 -->
+        <td>
+            <span class="btn btn-primary btn-xs" onclick="globalData.showDetailFn('{{value.custId}}', '{{value.oppCustId}}', '{{value.trxCountId}}', this)">{{btnName}}</span>
+        </td>
+</tr>
+{{/each}}
+{{else}}
+    <tr>
+        <td colspan="10" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+
+</script>
+<!--客户信息-->
+<script type="text/html" id="customerInfo_globalDataTbody">
+{{if list && list.length > 0 }} {{each list as value i}}
+<tr _id="{{value.id}}">
+    {{if $btnType != 'list'}}
+    <td>
+        <span class="zCBox"></span>
+    </td>
+    {{else}}
+        <td>
+            <span class="zCBox" disabled="true"></span>
+        </td>
+        {{/if}}
+        <td>{{value.custId}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custType}}</td>
+        <td>{{value.custJob}}</td>
+        <td>{{value.lgpsonCustId}}</td>
+        <td>{{value.lgpsonCustNm}}</td>
+        <td>{{value.riskLevel}}</td>
+</tr>
+{{/each}}
+{{else}}
+    <tr>
+        <td colspan="8" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+
+</script>
+<!--详细交易信息-->
+<script type="text/html" id="detailInfo_globalDataTbody">
+{{if list && list.length > 0 }} {{each list as value i}}
+<tr _id="{{value.oppCustId}}">
+    {{if $btnType != 'list'}}
+    <td>
+        {{if checkedList.indexOf(value.trxId) >= 0}}
+        <span class="zCBox zCheck"></span>
+        {{else}}
+            <span class="zCBox"></span> {{/if}}
+
+    </td>
+    {{else}}
+        <td>
+            {{if checkedList.indexOf(value.trxId) >= 0}}
+            <span class="zCBox zCheck" disabled="true"></span>
+            {{else}}
+                <span class="zCBox" disabled="true"></span> {{/if}}
+        </td>
+        {{/if}}
+        <td class="hide">{{value.trxId}}</td>
+        <td>{{value.trxDt}}</td>
+        <td>{{value.trxTm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.trxAmt}}</td>
+        <td>{{value.onlBal}}</td>
+        <td>{{value.oppEacId}}</td>
+        <td>{{value.oppCustId}}</td>
+        <td>{{value.oppCustNm}}</td>
+        <td>{{value.sabstract}}</td>
+        <td>{{value.otherInfo}}</td>
+</tr>
+{{/each}}
+{{else}}
+    <tr>
+        <td colspan="12" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+
+</script>
+<script>
+    var globalData = {
+        initValue: {
+            tradingNetTitle: {
+                zh_cn: '客户交易关系图',
+                en_us: 'Customer Transaction Diagram',
+                zh_cht: '客戶交易關係圖'
+            },
+            saveTips: {
+                zh_cn: '保存成功！',
+                en_us: 'Save successfully!',
+                zh_cht: '保存成功！'
+            },
+            person: {
+                zh_cn: '人物',
+                en_us: 'Person',
+                zh_cht: '人物'
+            },
+            family: {
+                zh_cn: '家人',
+                en_us: 'Family',
+                zh_cht: '家人'
+            },
+            friend: {
+                zh_cn: '朋友',
+                en_us: 'Friends',
+                zh_cht: '朋友'
+            },
+            customerNum: {
+                zh_cn: '客户编号',
+                en_us: 'Customer Number',
+                zh_cht: '客戶編號'
+            },
+            echartTips: {
+                zh_cn: '当前已经是$n$的数据',
+                en_us: "Now it's $n$'s data",
+                zh_cht: '當前已經是$n$的數據'
+            },
+            echartTips2: {
+                zh_cn: '请点击$n$的对手',
+                en_us: "Please choose $n$'s opponent",
+                zh_cht: '請點擊$n$的對手'
+            }
+
+        },
+        initData: {
+            showNum: 10
+        },
+        // 全局请求参数
+        data: {
+            pageNum: 1,
+            pageSize: 10
+        },
+        pagination1: {
+            pageNum: 1,
+            pageSize: 10
+        },
+        pagination2: {
+            pageNum: 1,
+            pageSize: 10
+        },
+        echart: '',
+
+        //获取勾选的初始值， 图表初始值
+        initCheckedChartData: {},
+
+        echartsOption: {
+            initOption: '',
+            initClass: '',
+            initClickData: [],
+            currentClass: '', //当前层级
+            currentClickData: [], //当前点击项集合
+            checkedDatas: [] //当前勾选的集合
+        },
+
+        detailCheckedData: {
+            currentClickItem: [], //当前点击项集合
+            currentClickItemStr: '', //当前点击项格式 custid_custNm_oppCustId_oppCustNm
+            checkedOppId: [],
+            finalClickData: [], //全部详情的集合 包括pid, 当前页面操作的数据
+            finalClickDataP: [] //最终传递的结合，获取的数据
+        },
+
+        iii: 0,
+
+        color1: '#ddd',
+
+        host: function (params) {
+            return project.host(params);
+        },
+        upload: function () {
+            var url = globalData.host() + '/v1/transMaps/excelsTransMaps';
+
+            url = url + '?custId=' + globalData.initValue.pageData.custId +
+                '&dateTime=' + globalData.initValue.pageData.sdate +
+                '&timeSpan=' + globalData.initValue.pageData.$timeSpan;
+
+            var req = new XMLHttpRequest()
+            var index = layer.load(3, {
+                shade: .1
+            })
+            req.open('GET', url, true)
+
+            req.onprogress = function (e) {
+                if (e.target.status == 200) {
+                    layer.close(index)
+                }
+            }
+
+            req.responseType = 'blob'
+            req.setRequestHeader('Content-Type', 'application/json');
+            req.onload = function () {
+                var data = req.response;
+                var a = document.createElement('a')
+                var blob = new Blob([data])
+                var blobUrl = window.URL.createObjectURL(blob)
+
+                var b = document.createElement('a')
+                b.style.display = 'none'
+                b.download = '交易汇总数据导出.xls'
+                b.href = blobUrl
+                b.click()
+                document.body.removeChild(b)
+            }
+            req.send('')
+            setTimeout(function () {
+                layer.close(index)
+            }, 20000)
+        },
+        // 详细交易信息 导出按钮方法
+        upload1: function () {
+            var url = globalData.host() + '/v1/transTotals/excelsTransInfo';
+
+            url += '?custId=' + globalData.detailCheckedData.detailCustId +
+                '&oppCustId=' + globalData.detailCheckedData.detailOppCustId + '&dateTime=' + globalData
+                .initValue.pageData.sdate +
+                '&timeSpan=' + globalData.initValue.pageData.$timeSpan;
+
+            var req = new XMLHttpRequest()
+            var index = layer.load(3, {
+                shade: .1
+            })
+            req.open('GET', url, true)
+
+            req.onprogress = function (e) {
+                if (e.target.status == 200) {
+                    layer.close(index)
+                }
+            }
+
+            req.responseType = 'blob'
+            req.setRequestHeader('Content-Type', 'application/json');
+            req.onload = function () {
+                var data = req.response;
+                var blob = new Blob([data])
+                var blobUrl = window.URL.createObjectURL(blob)
+                var b = document.createElement('a')
+                b.download = '交易数据导出.xls'
+                b.href = blobUrl
+                b.click()
+                window.URL.revokeObjectURL(blobUrl)
+            }
+            req.send('')
+            setTimeout(function () {
+                layer.close(index)
+            }, 20000)
+        },
+        // 当前用户信息 导出按钮方法
+        upload2: function () {
+            var url = globalData.host() + '/v1/transMaps/excelsTransMaps';
+            url += '?custId=' + globalData.finalClickItemCusId +
+                '&dateTime=' + globalData.initValue.pageData.sdate + '&timeSpan=' +
+                globalData.initValue.pageData.$timeSpan;
+            var req = new XMLHttpRequest()
+            var index = layer.load(3, {
+                shade: .1
+            })
+            req.open('GET', url, true)
+            req.onprogress = function (e) {
+                if (e.target.status == 200) {
+                    layer.close(index)
+                }
+            }
+            req.responseType = 'blob'
+            req.setRequestHeader('Content-Type', 'application/json');
+            req.onload = function () {
+                var data = req.response;
+                var blob = new Blob([data])
+                var blobUrl = window.URL.createObjectURL(blob)
+                var b = document.createElement('a')
+                b.download = '交易汇总数据导出.xls'
+                b.href = blobUrl
+                b.click()
+                window.URL.revokeObjectURL(blobUrl)
+            }
+            req.send('')
+            setTimeout(function () {
+                layer.close(index)
+            }, 20000)
+        },
+        getDataValue: function (key) {
+            if (!key) {
+                return '';
+            }
+            return this.initValue[key][lang.getLang()];
+        },
+        getResultId: function () {
+            var storage = $.getUrlParams();
+            globalData.initValue.pageData = storage;
+            globalData.echartsOption.initClickData.push(storage.custId);
+        },
+        getRandomColor: function () {
+            var str = '';
+            str = Math.floor(Math.random() * 0xffffff).toString(16);
+            str == "000000" && (str = 'ccc')
+
+            if (str.length < 6) {
+                str = globalData.getRandomColor();
+            }
+
+            return str;
+        },
+
+        dealStr: function (data) {
+            if (!data) {
+                return data
+            }
+            var isLong = false
+            if (data && data.length >= 15) {
+                data = data.substr(0, 15)
+                isLong = true
+            }
+            if (data.length < 5) {
+                return data;
+            }
+
+            var cl = 3,
+                times, newArr = '';
+            if (data.length <= 9) {
+                cl = 2;
+            }
+
+            times = Math.floor(data.length / cl);
+            newArr = '';
+
+            for (var i = 0; i < (cl); i++) {
+                if (i == cl - 1) {
+                    newArr += data.substr(times * i);
+                } else {
+                    newArr += data.substr(times * i, times) + '\n';
+                }
+            }
+            if (isLong) {
+                newArr += '..'
+            }
+            return newArr;
+        },
+
+        saveNoteFn: function () {
+            var url = '/v1/conclusionInfos/analysis';
+            var val = $("#suspicious_analysisNote").val();
+            var pageData = globalData.initValue.pageData;
+
+            //1-交易分析链笔记 2-网络交易链分析笔记 3-处理意见即附加分
+
+            var data = {
+                screentId: pageData.outId,
+                roleId: JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+                notBookType: 1,
+                content: val,
+                userId: JSON.parse(sessionStorage.getItem('data')).user.userId,
+                name: JSON.parse(sessionStorage.getItem('data')).user.userName
+            };
+
+            if (globalData.noteId) {
+                data.id = globalData.noteId;
+            }
+
+            $.zAjax({
+                url: globalData.host() + url,
+                type: 'post',
+                isString: true,
+                data: data,
+                success: function (data) {
+                    globalData.noteId = data.data;
+                    layer.msg(globalData.getDataValue('saveTips'), {
+                        icon: 1
+                    });
+                }
+            })
+        },
+
+        //获取初始化勾选，图表数据
+        getCheckedChartData: function (fn) {
+            var url = '/v1/screenTrans';
+
+            $.zAjax({
+                url: globalData.host() + url,
+                data: {
+                    screentId: globalData.initValue.pageData.outId
+                },
+                success: function (data) {
+                    if (data.code == 0) {
+                        data = data.data;
+                        if (data.tscreenTrans && data.tscreenTrans.length > 0) {
+                            globalData.finalClickItemCusId = data.tscreenTrans[0].index; //获取最终点击项id
+                            globalData.detailCheckedData.finalClickData = data.tscreenTrans || [];
+                            globalData.detailCheckedData.finalClickDataP = data.tscreenTrans || [];
+                        }
+
+                        //当前图表数据
+                        globalData.initCheckedChartData = data.transMapData ? JSON.parse(data
+                            .transMapData) : '';
+
+                        globalData.echartsOption = globalData.initCheckedChartData.echartsOption ||
+                        {};
+
+                        globalData.detailCheckedData.finalClickData = globalData
+                            .initCheckedChartData.finalClickData ? globalData.initCheckedChartData
+                            .finalClickData : [];
+                    } else {
+                        globalData.detailCheckedData.finalClickData = [];
+                    }
+
+                    // globalData.getRelationData($.getUrlParams().$timeSpan);
+                    globalData.getCustTableData();
+                    if (fn) {
+                        fn()()
+                    }
+
+                }
+            })
+        },
+
+        //交易信息汇总勾选
+        tradeChainChecked: function (ele, custId, oppCustId, trxCountId, slef, isChecked) {
+            var _ele = ele;
+            //获取当前列表的所有custId
+            setTimeout(function () {
+
+                var checkedData = {
+                        data: []
+                    },
+                    type = false,
+                    finalpId = "";
+
+                //如果点击的不是对手客户表格， pId 为空
+                finalpId = _ele == "#suspicious_tradeChain_transactionInfoSummaryWBox" ? globalData
+                    .initValue.pageData.custId : globalData.currentPId;
+
+                $(_ele).find('tbody tr td .zCBox').each(function (index, item) {
+
+                    var currentItem = {};
+                    currentItem.custId = $(item).closest('tr').eq(0).find('td').eq(2).html();
+                    currentItem.oppCustId = $(item).closest('tr').eq(0).find('td').eq(5).html();
+
+                    currentItem.trxCountId = $(item).closest('tr').eq(0).find('td').eq(1)
+                .html();
+
+                    if ($(item).hasClass('zCheck')) {
+                        currentItem.isChecked = 1;
+                    }
+
+                    checkedData.data.push(currentItem);
+                });
+
+                checkedData = checkedData.data;
+                //如果是单个操作
+                if (slef) {
+                    if (!isChecked) {
+                        if ($(slef).hasClass('zCheck')) {
+                            type = true; //勾选
+
+                            var isHave = false;
+
+                            globalData.detailCheckedData.finalClickData.forEach(function (item) {
+                                if (item.trxCountId == trxCountId) {
+                                    isHave = true;
+                                }
+                            })
+
+                            if (!isHave) {
+                                globalData.detailCheckedData.finalClickData.push({
+                                    custId: custId,
+                                    oppCustId: oppCustId,
+                                    transactions: '',
+                                    screentId: globalData.initValue.pageData.outId,
+                                    trxCountId: trxCountId,
+                                    pId: finalpId
+                                });
+                            }
+
+                        } else {
+                            type = false; //取消勾选
+
+                            globalData.detailCheckedData.finalClickData = globalData.selectAllData(
+                                globalData.detailCheckedData.finalClickData, trxCountId);
+
+                        }
+                    }
+
+                } else {
+                    checkedData.forEach(function (item) {
+                        var isHave = false;
+                        //如果是取消勾选的
+                        if (!item.isChecked) {
+
+                            globalData.detailCheckedData.finalClickData = globalData
+                                .selectAllData(globalData.detailCheckedData.finalClickData, item
+                                    .trxCountId);
+                        } else {
+
+                            //判断当前是否以存在该项
+                            globalData.detailCheckedData.finalClickData.forEach(function (i) {
+
+                                if (i.trxCountId == item.trxCountId) {
+                                    isHave = true;
+                                }
+                            })
+
+                            // 通过isHave 判断当前是否已经勾选，如果没有，添加，有，对之前的不做操作
+                            if (!isHave) {
+                                globalData.detailCheckedData.finalClickData.push({
+                                    pId: finalpId,
+                                    custId: item.custId,
+                                    oppCustId: item.oppCustId,
+                                    screentId: globalData.initValue.pageData.outId,
+                                    transactions: '',
+                                    trxCountId: item.trxCountId
+                                })
+                            }
+                        }
+                    })
+                }
+
+            })
+
+        },
+
+        showDetailFn: function (custId, oppCustId, trxCountId, slef) {
+            //从全部详情点击数据中寻找当前点击详情项是否有勾选数据
+            var isHaveDetailClickItem = false;
+            var arrs = [];
+            globalData.detailCheckedData.detailCustId = custId
+            globalData.detailCheckedData.detailOppCustId = oppCustId
+
+            globalData.detailCheckedData.currentClickItem = [];
+            globalData.detailCheckedData.finalClickData.forEach(function (item) {
+                if (item.trxCountId == trxCountId) {
+                    isHaveDetailClickItem = true;
+                    globalData.detailCheckedData.currentClickItem = item.transactions ? item
+                        .transactions.split(',') : '';
+                    arrs = item.transactions ? item.transactions.split(',') : '';
+                }
+            })
+
+            globalData.openFn(trxCountId, slef, isHaveDetailClickItem, custId, oppCustId);
+            globalData.getData(custId, oppCustId, arrs, '');
+        },
+
+        openFn: function (trxCountId, slef, isHaveDetailClickItem, custId, oppCustId) {
+            $("#detailInfo_globalDataTbodyW").empty().closest('table').find('th .zCheckAll').eq(0).removeClass(
+                'zCheck');
+            $.zOpen({
+                title: '',
+                ele: '#detailInfo_globalDataTbodyWBox',
+                area: ['1000px', '80%'],
+                callback: function () {
+                    var clickedDetail = [],
+                        closestDivId = $(slef).closest('div').attr('id')
+
+                    var finalpId = (closestDivId ==
+                            'suspicious_tradeChain_transactionInfoSummaryOW') ? globalData
+                        .currentPId : "";
+                    //获取当前勾选的所有详细交易信息
+                    //
+                    if (!isHaveDetailClickItem) {
+                        globalData.detailCheckedData.finalClickData.push({
+                            custId: custId,
+                            oppCustId: oppCustId,
+                            transactions: '',
+                            screentId: globalData.initValue.pageData.outId,
+                            trxCountId: trxCountId,
+                            pId: finalpId
+                        });
+
+                        globalData.detailCheckedData.currentClickItem = [];
+                    }
+
+                    $("#detailInfo_globalDataTbodyWBox").find("tr td .zCBox.zCheck").each(
+                    function () {
+                        clickedDetail.push($(this).closest('tr').find('td.hide').html());
+                    })
+
+                    var arrs = [];
+
+                    globalData.detailCheckedData.finalClickData.forEach(function (item) {
+
+                        item.screentId = globalData.initValue.pageData.outId;
+
+                        if (item.trxCountId == trxCountId) {
+                            item.transactions = clickedDetail.join(',');
+                            globalData.detailCheckedData.currentClickItem = clickedDetail;
+                        }
+
+                        arrs.push(item)
+                    })
+
+                    globalData.detailCheckedData.finalClickData = arrs;
+                    globalData.detailCheckedData.currentClickItem = clickedDetail;
+
+
+                    if (clickedDetail.length > 0) {
+                        $(slef).closest('tr').find('td .zCBox').addClass('zCheck');
+
+                        var clickItemData = {
+                            oppCustId: $(slef).closest('tr').find('td').eq(5).html(),
+                            custId: $(slef).closest('tr').find('td').eq(2).html(),
+                            trxCountId: $(slef).closest('tr').find('td').eq(1).html()
+                        };
+
+                        //判断是否全部勾选
+                        if (closestDivId == 'suspicious_tradeChain_transactionInfoSummaryOW') {
+
+                            //新增
+                            slef = $(slef).closest('tr').find('span.zCBox');
+
+                            globalData.clickCheck('suspicious_tradeChain_transactionInfoSummaryOW',
+                                slef, clickItemData.custId, clickItemData.oppCustId,
+                                clickItemData.trxCountId, true);
+
+                        } else {
+                            globalData.tradeChainChecked(
+                                'suspicious_tradeChain_transactionInfoSummaryWBox',
+                                clickItemData.custId, clickItemData.oppCustId, clickItemData
+                                .trxCountId, slef, true);
+                        }
+
+                    }
+
+                    if ($(slef).closest('table').find('tr td .zCBox.zCheck').length == $(slef)
+                        .closest('table').find('tr td .zCBox').length) {
+                        $(slef).closest('table').find('th .zCBox.zCheckAll').addClass('zCheck');
+                    }
+
+                    globalData.initAllCheckedStatus();
+                    layer.closeAll();
+                },
+                close: function () {
+                    if ($(slef).closest('table').find('tr td .zCBox.zCheck').length == $(slef)
+                        .closest('table').find('tr td .zCBox').length) {
+                        $(slef).closest('table').find('th .zCBox.zCheckAll').addClass('zCheck');
+                    }
+                    layer.closeAll();
+                }
+            })
+
+        },
+
+        clickCheck: function (ele, slef, custId, oppCustId, trxCountId, checkedStr) {
+        	
+            var _self = slef,
+                isChecked = false,
+                isAllChecked = false;
+            setTimeout(function () {
+            	
+                if (slef) {
+                    // 如果是单个操作
+                    globalData.tradeChainChecked(ele, oppCustId, custId, trxCountId, slef);
+                } else {
+                    globalData.tradeChainChecked(ele, oppCustId, custId, trxCountId);
+                }
+
+                //对图操作------判断当前是否是勾选还是取消勾选
+                var list = globalData.CheckList(ele),
+                    allList = globalData.CheckList(ele, true), //获取当前全部list项
+                    dataLanguage = $.dataLanguage(),
+                    data = globalData.option.data,
+                    linkData = globalData.option.linkData,
+                    currentClass = globalData.echartsOption.currentClass;
+
+                var dataNew = [].concat(data),
+                    linkDataNew = [].concat(linkData);
+
+                // globalData.color1 = globalData.iii==0?"#"+Math.ceil( Math.random()*1000000):globalData.color1;
+                globalData.color1 = globalData.iii == 0 ? '#' + globalData.getRandomColor() : globalData
+                    .color1;
+                globalData.iii++;
+
+                //全选
+                if (list.length == currentClass.length) {
+                    isAllChecked = true;
+                }
+
+                //如果全部勾选项中存在trxCountId, isChecked true ,勾选状态
+                list.forEach(function (n, i) {
+                    if (n.trxCountId == trxCountId) {
+                        isChecked = true;
+                    }
+                })
+                //list 为0, 取消全选
+                if (list.length <= 0) {
+                    //删除全部相关
+                    allList.forEach(function (item) {
+                        if (!item.trxCountId) {
+                            return
+                        }
+                        linkData = globalData.selectAllData(linkDataNew, item.trxCountId);
+
+                        data = globalData.selectAllData(data, item.trxCountId);
+
+                        globalData.detailCheckedData.finalClickData = globalData.selectAllData(
+                            globalData.detailCheckedData.finalClickData, item.trxCountId);
+                    })
+                    if (ele == '#suspicious_tradeChain_transactionInfoSummaryWBox') {
+                        $('#customerInfo').removeClass('col-md-6').addClass('col-md-12')
+                        $('#opponentCustomerInfo').removeClass('col-md-6').hide(500)
+                        var result = globalData.initData.baseItemData
+                        custInfo = {
+                            name: result.custId,
+                            custId: result.custNm,
+                            trxCountId: result.trxCountId,
+                            category: 0,
+                            draggable: true,
+                            tooltip: "<p>" + dataLanguage.customerName + "：" + result.custNm +
+                                "</p><p>" + dataLanguage.customerNum + "：" + result.custId +
+                                "</p><p>对手账号：" + (result.oppEacId || '-') + "</p><p>" + dataLanguage
+                                .transactionTimes + "：-</p><p>" + dataLanguage.transactionSum +
+                                "：-</p><p>" + dataLanguage.opponentCustomerName + "：-</p><p>" +
+                                dataLanguage.opponentCardNum + "：-</p>",
+                            des: dataLanguage.customerName + ":" + result.custNm + ";" +
+                                dataLanguage.customerNum + ":" + result.custId + ";" + dataLanguage
+                                .transactionTimes + ":0;" + dataLanguage.transactionSum + ":0" +
+                                dataLanguage.opponentCustomerName + ":-;" + dataLanguage
+                                .opponentCustomerNum + ":-",
+                            itemStyle: {
+                                normal: {
+                                    color: "red",
+                                    opacity: 1
+                                }
+                            }
+                        };
+                        data.unshift(custInfo)
+                    }
+                }
+
+                //如果当前存在是否勾选的状态，直接获取
+                isChecked = checkedStr || isChecked;
+
+                //删除
+                if (!isChecked && slef) {
+
+                    linkData = globalData.selectAllData(linkDataNew, trxCountId);
+
+                    data = globalData.selectAllData(data, trxCountId);
+                    globalData.detailCheckedData.finalClickData = globalData.selectAllData(globalData
+                        .detailCheckedData.finalClickData, trxCountId);
+
+                } else {
+                    //debugger
+                    //将当前点击项添加入 finalClickData;
+                    list.forEach(function (n, i) {
+                        if (globalData.echartsOption.checkedDatas && globalData.echartsOption
+                            .checkedDatas.indexOf(n.trxCountId) < 0) {
+                            globalData.echartsOption.checkedDatas.push(n.trxCountId);
+                        }
+
+                        var arr = {};
+                        var arr1 = '';
+                        var arr2 = '';
+
+                        arr.pId = globalData.currentPId ? globalData.currentPId : globalData
+                            .initValue.pageData.custId;
+                        arr.name = n.oppCustId;
+                        arr.trxCountId = n.trxCountId;
+                        arr.custId = n.name;
+                        arr.tooltip = n.tooltip;
+                        arr.des = n.des;
+                        arr.oppEacId = n.oppEacId;
+                        arr.itemStyle = {
+                            "normal": {
+                                "color": globalData.color1
+                            }
+                        };
+                        arr.edgeLabel = {
+                            itemStyle: {
+                                "normal": {
+                                    "color": globalData.color1
+                                }
+                            }
+                        };
+
+                        if ($.isHw(arr.name) == 'hn' && arr.category != 0) {
+                            arr.itemStyle.normal.shadowBlur = 30;
+                            arr.itemStyle.normal.shadowColor = arr.itemStyle.normal.color
+                        }
+
+                        if ($.isHw(arr.name) == 'xj' && arr.category != 0) {
+                            arr.itemStyle = {}
+                            arr.itemStyle.normal = {}
+                            arr.itemStyle.normal.color = '#000'
+                        }
+
+                        if (n.isSusOppCust == '1') {
+                            arr.itemStyle.normal.borderColor = arr.itemStyle.normal.color
+                            arr.itemStyle.normal.color = {}
+                            arr.itemStyle.normal.color.type = 'radial'
+                            arr.itemStyle.normal.color.x = .5
+                            arr.itemStyle.normal.color.y = .5
+                            arr.itemStyle.normal.color.r = .45
+                            arr.itemStyle.normal.color.colorStops = [{
+                                offset: 0.95,
+                                color: arr.itemStyle.normal.borderColor
+                            }, {
+                                offset: 1,
+                                color: "#fff"
+                            }]
+                        }
+
+                        arr.symbolSize = $.sortAmtQ(n.trxAmt)
+
+                        arr.label = {
+                            textStyle: {
+                                fontSize: $.sortFontSize(n.trxAmt)
+                            }
+                        }
+                        console.log("res:",n);
+
+                        arr.tooltip = "<p>" + dataLanguage.customerName + "：" + n.custId +
+                            "</p><p>" + "客户号：" + n.tttt +
+                            "</p><p>" + dataLanguage.transactionTimes + "： " + n.trxCount +
+                            "</p><p>" +
+                            "交易汇总金额：" + (n.trxTotalAmt || '') + '</p><p>' + dataLanguage
+                            .transactionSum + "：" + n.trxAmt + "</p><p>" + dataLanguage.opponentCustomerName + "：" + n.name +
+                            "</p><p>" + dataLanguage.opponentCustomerNum + "：" + n.oppCustId +
+                            "</p><p>对手账号：" + (n.oppEacId || '-') + "</p><p>借方笔数：" + n
+                            .outputCount + "</p><p>借方金额：" + n.outputAmt + "</p><p>贷方笔数：" + n
+                            .inputCount + "</p><p>贷方金额：" + n.inputAmt + "</p><p>总笔数：" + n
+                            .trxCount + "</p>"
+
+                        arr.des = dataLanguage.customerName + "：" + n.custNm + ";" +
+                            dataLanguage.customerNum + "：" + n.custId +
+                            ";" + dataLanguage.transactionTimes + "：0;" + dataLanguage
+                            .transactionSum + "：0;" + dataLanguage.opponentCustomerName + "：" +
+                            n.lgpsonCustNm + ";" + dataLanguage.opponentCustomerNum + "：" +
+                            n.lgpsonCustId;
+
+                        if (n.inputAmt && n.inputAmt != 0) {
+                            arr1 = {}
+                            arr1.pId = globalData.currentPId;
+                            arr1.trxCountId = n.trxCountId;
+                            arr1.source = n.oppCustId;
+                            arr1.target = n.tttt;
+                            arr1.custId = n.oppCustId;
+
+                            arr1.value = n.inputCount + dataLanguage.times + "-" + n.inputAmt +
+                                dataLanguage.rmb;
+                            arr1.tooltip = arr.tooltip;
+                            arr1.lineStyle = {
+                                normal: {
+                                    width: 1.5,
+                                    curveness: 0.1
+                                }
+                            };
+                        }
+
+                        if (n.outputAmt && n.outputAmt != 0) {
+                            arr2 = {}
+                            arr2.pId = globalData.currentPId
+                            arr.trxCountId = n.trxCountId
+                            arr2.target = n.n.oppCustId
+                            arr2.source = n.tttt
+                            arr2.custId = n.oppCustId
+                            arr2.value = n.outputCount + dataLanguage.times + '-' + n
+                                .outputAmt + dataLanguage.rmb
+                            arr2.tooltip = arr.tooltip
+                            arr2.lineStyle = {
+                                normal: {
+                                    width: 1.5,
+                                    curveness: 0.1
+                                }
+                            }
+                        }
+
+                        //如果当前存在该项
+                        var buer = true;
+                        data.forEach(function (n, i) {
+
+                            if (arr.name == n.name) {
+                                buer = false;
+                                return
+                            }
+                        });
+                        if (buer && arr.trxCountId) data.push(arr);
+                        linkData.push({
+                            "source": 0,
+                            "target": 0,
+                            "pId": globalData.currentPId,
+                            "trxCountId": n.trxCountId
+                        });
+                        if (arr1 != '') linkData.push(arr1);
+                        if (arr2 != '') linkData.push(arr2);
+
+                    });
+                }
+
+                globalData.option.data = data;
+                globalData.option.linkData = linkData;
+
+                globalData.option.series[0].data = data;
+                globalData.option.series[0].links = linkData;
+                globalData.echart.setOption(globalData.option, false);
+            })
+
+        },
+
+        checkedAllData: function (arr, id) {
+
+            arr.forEach(function (item) {
+                if (item.trxCountId == id) {
+                    item.$isChecked = true;
+                }
+            })
+
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i].pId && arr[i].pId == id) {
+                    arr[i].$isChecked = true;
+
+                    arr = globalData.checkedAllData(arr, arr[i].trxCountId);
+                }
+            }
+
+            return arr;
+        },
+
+        selectAllData: function (arr, id) {
+            var newArr = globalData.checkedAllData(arr, id);
+            var finalArr = [];
+
+            for (var i = 0; i < newArr.length; i++) {
+                if (!newArr[i].$isChecked) {
+                    finalArr.push(newArr[i]);
+                }
+            }
+
+            return finalArr;
+        },
+
+        getData: function (custId, oppCustId, currentStr, pageData) {
+
+            var url = '/v1/transTotals';
+            var arrs = currentStr,
+                timeSpan = globalData.initValue.pageData.$timeSpan ? globalData.initValue.pageData.$timeSpan :
+                1,
+                sDate = globalData.initValue.pageData.sdate;
+
+            var data = {
+                    custId: custId,
+                    oppCustId: oppCustId,
+                    timeSpan: timeSpan,
+                    dateTime: sDate
+                },
+                pageData = pageData || globalData.data;
+
+            data = $.extend(globalData.data, data);
+
+
+            $.zAjax({
+                url: globalData.host() + url,
+                data: data,
+                success: function (res) {
+                    if (res) {
+                        var total = res.pageInfo && res.pageInfo.total;
+
+                        res.pageInfo = res.pageInfo || {};
+
+                        res.checkedList = [];
+                        //当前勾选项
+
+                        if (globalData.detailCheckedData.currentClickItem) {
+                            res.checkedList = globalData.detailCheckedData.currentClickItem;
+                        }
+
+                        $.zPageMethod({
+                            page: '#Pagination',
+                            url: globalData.host() + url,
+                            tp: 'detailInfo_globalDataTbody',
+                            ele: '#detailInfo_globalDataTbodyW',
+                            total: total,
+                            data: pageData,
+                            list: res,
+                            getDataParams: [custId, oppCustId, ''],
+                            paginationWrap: '#detailInfo_globalDataTbodyWBox',
+                            $isNotNeddTem: true,
+                            success: function (res) {
+
+                                globalData.getDataCallback(res);
+
+                            }
+                        });
+
+                        globalData.getDataCallback(res);
+                    }
+
+                }
+            });
+        },
+
+        getDataCallback: function (res) {
+            res.checkedList = [];
+            //当前勾选项
+
+            if (globalData.detailCheckedData.currentClickItem) {
+                res.checkedList = globalData.detailCheckedData.currentClickItem;
+            }
+
+            res.$btnType = globalData.initValue.pageData.$btnType;
+
+            $("#detailInfo_globalDataTbodyW").html(template('detailInfo_globalDataTbody', res));
+
+            globalData.initAllCheckedStatus();
+
+        },
+
+        saveInfo: function () {
+            var arrs = globalData.detailCheckedData;
+
+            var url = '/v1/screenTrans';
+
+            var echartsData = {
+                data: globalData.option.data,
+                linkData: globalData.option.linkData,
+                echartsOption: globalData.echartsOption
+            };
+
+            if (globalData.finalClickItemCusId && globalData.detailCheckedData.finalClickData.length <= 0) {
+                globalData.detailCheckedData.finalClickData.push({
+                    custId: '',
+                    oppCustId: '',
+                    transactions: '',
+                    screentId: '',
+                    trxCountId: ''
+                })
+            }
+
+            globalData.detailCheckedData.finalClickData.forEach(function (item) {
+                item.index = globalData.finalClickItemCusId;
+                delete item.pId;
+            });
+
+            echartsData.finalClickData = globalData.detailCheckedData.finalClickData;
+
+            var data = {
+                tscreenTrans: globalData.detailCheckedData.finalClickData,
+                transMapData: JSON.stringify(echartsData),
+                screentId: globalData.initValue.pageData.outId
+            };
+            //保存勾选的数据
+            $.zAjax({
+                url: globalData.host() + url,
+                data: data,
+                type: 'post',
+                isString: true,
+                success: function (data) {
+                    if (data.code == 0) {
+                        layer.msg(globalData.getDataValue('saveTips'), {
+                            icon: 1
+                        })
+                    } else {
+                        layer.msg(data.desc);
+                    }
+                }
+            })
+        },
+
+        //客户交易关系图数据获取
+        getRelationData: function (val) {
+            var url = '/v1/transMaps';
+
+            $.zAjax({
+                url: globalData.host() + url,
+                data: {
+                    custId: globalData.initValue.pageData.custId,
+                    dateTime: globalData.initValue.pageData.sdate,
+                    timeSpan: val || globalData.initValue.pageData.$timeSpan
+                },
+                type: 'GET',
+                success: function (data) {
+                    if (data) {
+                        var result = data.list || [];
+                        globalData.echartsOption.initClass = result;
+
+                        if (globalData.initData.showNum != 'all') {
+                            result = result.slice(0, globalData.initData.showNum)
+                        }
+                        globalData.echartsOption.showClass = result
+                        globalData.detailCheckedData.finalClickData = globalData.detailCheckedData
+                            .finalClickData.concat(result)
+
+                        var chartData = globalData.buildRelationChartData(result)
+
+                        //当前层级数据
+                        globalData.getCustInfo(chartData);
+                    }
+                }
+            });
+        },
+
+        //获取图表数据
+        getCustTableData: function (pageData) {
+            var url = '/v1/transMaps';
+
+            var data = {
+                custId: globalData.initValue.pageData.custId,
+                dateTime: globalData.initValue.pageData.sdate,
+                timeSpan: globalData.initValue.pageData.$timeSpan
+            };
+
+            pageData = pageData || globalData.pagination1;
+            // pageData = $.extend(pageData, data);
+            pageData.custId = data.custId;
+            pageData.dateTime = data.dateTime;
+            pageData.timeSpan = data.timeSpan;
+            $.zAjax({
+                url: globalData.host() + url,
+                data: pageData,
+                type: 'GET',
+                success: function (data) {
+                    if (data) {
+                        var total = data.pageInfo ? data.pageInfo.total : 0;
+                        var checkedList = [];
+
+                        data.pageInfo = data.pageInfo || {};
+
+                        if (globalData.detailCheckedData.finalClickData) {
+                            //获取左侧的数据
+                            globalData.detailCheckedData.finalClickData.forEach(function (item) {
+                                if (item.custId == globalData.initValue.pageData.custId) {
+                                    checkedList.push(item.trxCountId);
+                                }
+                            })
+                        }
+
+
+                        data.checkedList = checkedList;
+                        data.$btnType = globalData.initValue.pageData.$btnType;
+                        data.btnName = $.dataLanguage().detailTradingInfo;
+
+                        $.zPageMethod({
+                            page: '#Pagination1',
+                            url: globalData.host() + url,
+                            tp: 'tradeTotal_globalDataTbody',
+                            ele: '#tradeTotal_globalDataTbodyW',
+                            total: total,
+                            data: pageData,
+                            list: data,
+                            $isNotNeddTem: true,
+                            paginationWrap: '#suspicious_tradeChain_transactionInfoSummaryWBox',
+                            success: function (data) {
+                                globalData.getCustTableDataCallback(data);
+                            }
+                        });
+
+                        globalData.getCustTableDataCallback(data);
+                    }
+                }
+            });
+        },
+
+        getCustTableDataCallback: function (data) {
+            var checkedList = [];
+
+            if (globalData.detailCheckedData.finalClickData) {
+                //获取左侧的数据
+                globalData.detailCheckedData.finalClickData.forEach(function (item) {
+                    if (item.custId == globalData.initValue.pageData.custId) {
+                        checkedList.push(item.trxCountId);
+                    }
+                })
+            }
+
+            globalData.echartsOption.currentClass = data.list
+            data.checkedList = checkedList;
+            data.$btnType = globalData.initValue.pageData.$btnType;
+            data.btnName = $.dataLanguage().detailTradingInfo;
+
+            $("#tradeTotal_globalDataTbodyW").html(template("tradeTotal_globalDataTbody", data));
+
+            globalData.initAllCheckedStatus();
+        },
+
+        CheckList: function (ele, getNotChecked) {
+   			
+        	var arr = [],
+                dataLanguage = $.dataLanguage();
+            var item = '',
+                data = $(ele + ' tr');
+
+            $(ele + ' tr').each(function (i, n) {
+				
+                if (getNotChecked || $(this).find('.zCheck').length) {
+                    arr.push({});
+                    arr[arr.length - 1].trxCountId = $(n).find('td:eq(1)').html();      // 待定
+                    arr[arr.length - 1].name = $(n).find('td:eq(6)').html();            // 客户名称
+                    arr[arr.length - 1].custId = $(n).find('td:eq(3)').html();          // 客户号
+                    arr[arr.length - 1].tttt = $(n).find('td:eq(2)').html();            // 对手客户名称
+                    arr[arr.length - 1].oppCustId = $(n).find('td:eq(5)').html();       // 对手客户号
+                    arr[arr.length - 1].trxAmt = $(n).find('td:eq(8)').html();          // 交易净值
+                    arr[arr.length - 1].trxCount = $(n).find('td:eq(8)').html();        // 交易次数
+                    arr[arr.length - 1].category = 1;
+                    arr[arr.length - 1].indexF = 19;
+                    arr[arr.length - 1].isSusOppCust = $(n).attr('issusoppcust')        // 未知 待定
+                    arr[arr.length - 1].draggable = '';
+                    arr[arr.length - 1].oppEacId = $(n).attr('oppeacid')                // 未知 待定
+                    arr[arr.length - 1].inputAmt = $(n).attr('inputamt')                // 入 金额
+                    arr[arr.length - 1].inputCount = $(n).attr('inputcount')            // 入 次数
+                    arr[arr.length - 1].outputAmt = $(n).attr('outputamt')              // 出 金额
+                    arr[arr.length - 1].outputCount = $(n).attr('outputcount')          // 出 次数
+                    arr[arr.length - 1].trxTotalAmt = $(n).attr('trxtotalamt')          // 交易汇总金额
+                    arr[arr.length - 1].tooltip = "<p>" + dataLanguage.customerName + "：" + globalData
+                        .duishoumc + "</p><p>" + dataLanguage.customerNum + "：" + globalData.duishouhm +
+                        "</p><p>" + dataLanguage.transactionTimes + "： " + $(n).find('td:eq(8)')
+                    .html() +
+                        "</p><p>" + dataLanguage.transactionSum + "：" + $(n).find('td:eq(7)').html() +
+                        "</p><p>" + dataLanguage.opponentCustomerName + "：" + $(n).find('td:eq(6)')
+                        .html() +
+                        "</p><p>" + dataLanguage.opponentCustomerNum + "：" + $(n).find('td:eq(5)')
+                        .html() + "</p>"
+                }
+
+            });
+			
+            return arr;
+        },
+        createRelationChart: function (data, linkData) {
+
+            var option = {
+                title: {
+                    text: globalData.getDataValue('tradingNetTitle')
+                },
+                tooltip: {
+                    formatter: function (x) {
+                        return x.data ? x.data.tooltip : '';
+                        // return globalData.getData('customerNum') + "：" + x.data.custId;
+                    }
+                },
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    symbolSize: 60,
+                    roam: true,
+                    edgeSymbol: ['circle', 'arrow'], //箭头样式
+                    edgeSymbolSize: [4, 12], //箭头大小
+                    animationDurationUpdate: 0,
+                    focusNodeAdjacency: true, // 涛哥2019.7.31在中行修改的
+                    categories: [{
+                        name: globalData.getDataValue('person')
+                    }, {
+                        name: globalData.getDataValue('family')
+                    }, {
+                        name: globalData.getDataValue('friend')
+                    }],
+                    force: {
+                        repulsion: 1000, // 涛哥2019.7.31在中行修改的
+                        edgeLength: [100, 100], // 涛哥2019.7.31在中行修改的
+                        layoutAnimation: false
+                    },
+                    // draggable: true, // 涛哥2019.7.31在中行修改的
+                    itemStyle: {
+                        normal: {
+                            color: '#999',
+                            opacity: 1
+                        }
+                    },
+                    lineStyle: {
+                        normal: {
+                            width: 2,
+                            color: '#4b565b',
+                            opacity: 1,
+                            curveness: 0.05
+                        }
+                    },
+                    edgeLabel: {
+                        normal: {
+                            show: true,
+                            formatter: function (x) {
+
+                                return x.data.value;
+                            }
+                        }
+                    },
+                    label: {
+                        normal: {
+                            show: true,
+                            textStyle: {},
+                            formatter: function (data) {
+                                var str = globalData.dealStr((data.data.custId))
+                                return str
+                            }
+                        }
+                    },
+                    data: data,
+                    links: linkData
+                }]
+            };
+
+            globalData.option = option;
+
+
+            //如果有初始图
+            if (globalData.finalClickItemCusId || globalData.initCheckedChartData && globalData
+                .initCheckedChartData.data) {
+                globalData.option.data = globalData.initCheckedChartData.data;
+                globalData.option.linkData = globalData.initCheckedChartData.linkData;
+
+                //获取对手信息
+                var custId = globalData.finalClickItemCusId;
+                globalData.getCustInfoData(custId);
+                //debugger
+                globalData.getTransMapData(custId);
+                //debugger
+
+                option.series[0].data = globalData.initCheckedChartData.data;
+                option.series[0].links = globalData.initCheckedChartData.linkData;
+
+            } else {
+                globalData.option.data = data;
+                globalData.option.linkData = linkData;
+            }
+
+            globalData.echart.setOption(option, false);
+
+            if (!globalData.echartsOption.initOption) {
+                globalData.echartsOption.initOption = {
+                    data: [].concat(data),
+                    linkData: [].concat(linkData)
+                };
+            }
+
+            globalData.echart.off('click');
+            globalData.echart.on("click", function (params) {
+
+                //如果当前点击的初始值， 不做操作
+                if (params.data.name == globalData.initValue.pageData.custId) {
+                    return;
+                }
+
+                if ($.isHw(params.data.name) == 'hw') {
+                    layer.msg(params.data.custId + '非深圳中行客户！');
+                    return
+                }
+
+                if ($.isHw(params.data.name) == 'xj') {
+                    layer.msg(params.data.custId + '是现金或者其他交易')
+                    return
+                }
+
+                globalData.iii = 0;
+                var custId = params.data.name;
+
+                //最终点击角色id
+                globalData.finalClickItemCusId = custId;
+
+                globalData.finalClickEchartItem = params.data;
+
+                //当前 点击pId
+                globalData.currentPId = params.data.trxCountId ? params.data.trxCountId : '';
+
+                //获取对手信息
+                globalData.getCustInfoData(custId, params);
+                //debugger
+                globalData.getTransMapData(custId, params, function () {
+                    setTimeout(function () {
+                        var isHave = false
+                        $('#suspicious_tradeChain_transactionInfoSummaryOW .zCBox.zCheckAll')
+                            .click()
+                    }, 1200)
+                });
+            });
+            return option;
+        },
+
+        isHaveItem: function (data, custId, str) {
+            str = str || 'trxCountId';
+
+            for (var i = 0; i < data.length; i++) {
+                if (data[i][str] == custId) {
+                    return 1;
+                }
+            }
+
+            return 0;
+        },
+        /* 组建图表数据 */
+        buildRelationChartData: function (data) {
+            var serializeJson = {},
+                serializelinkJson = {},
+                baseData = [],
+                linkData = [],
+                dataLanguage = $.dataLanguage();
+            $.each(data, function (i, item) {
+                serializeJson = {
+                    trxCountId: $.trim(item.trxCountId),
+                    name: $.trim(item.oppCustId),
+                    oppCustId: $.trim(item.oppCustId),
+                    trxCount: $.trim(item.trxCount),
+                    trxAmt: $.trim(item.trxAmt),
+                    custId: $.trim(item.oppCustNm),
+                    category: 1,
+                    indexF: i,
+                    draggable: true,
+                    isSusOppCust: item.isSusOppCust,
+                    oppEacId: item.oppEacId,
+                    tooltip: "<p>" + dataLanguage.customerName + "：" + item.custNm + "</p><p>" +
+                        dataLanguage.customerNum + "：" + item.custId + "</p><p>对手账号：" + (item
+                            .oppEacId || '-') + "<p></p>" + dataLanguage.transactionTimes + "：" +
+                        item.trxCount + "</p><p>交易汇总金额：" + (item.trxTotalAmt || '') + "<p></p>" +
+                        dataLanguage.transactionSum + "：" +
+                        item.trxAmt + "</p><p>" + dataLanguage.opponentCustomerName + "：" + item
+                        .oppCustNm + "</p><p>" + dataLanguage.opponentCustomerNum + "：" +
+                        item.oppCustId + "</p><p>借方笔数：" + item.outputCount + "</p><p>借方金额：" + item
+                        .outputAmt + "</p><p>贷方笔数：" + item.inputCount + "</p><p>贷款金额：" +
+                        item.inputAmt + "</p><p>总笔数：" + item.trxCount + "</p>",
+                    des: dataLanguage.customerName + "：" + item.oppCustNm + ";" + dataLanguage
+                        .customerNum + "：" + item.oppCustId + ";" + dataLanguage.transactionTimes +
+                        "：" + item.trxCount +
+                        ";" + dataLanguage.transactionSum + "：" + item.trxAmt + ";" + dataLanguage
+                        .opponentCustomerName + "：" + item.custNm + ";" + dataLanguage
+                        .opponentCustomerNum + "：" + item.custId
+
+                };
+
+                if ($.isHw(serializeJson.name) == 'hn') {
+                    serializeJson.itemStyle = {};
+                    serializeJson.itemStyle.normal = {};
+                    serializeJson.itemStyle.normal.shadowBlur = 30;
+                    serializeJson.itemStyle.normal.shadowColor = "#000";
+                }
+
+                if ($.isHw(serializeJson.name) == "xj" && serializeason.category != 0) {
+                	serializeJson.itemStyle = {};
+                    serializeJson.itemStyle.normal = {};
+                    serializeJson.itemStyle.normal.color = "#000";
+                }
+
+                if (serializeJson.isSusOppCust == '1') {
+                    serializeJson.itemStyle.normal.borderColor = serializeJson.itemStyle.normal.color;
+                    serializeJson.itemStyle.normal.color = {}
+                    serializeJson.itemStyle.normal.color.type = 'radial';
+                    serializeJson.itemStyle.normal.color.x = .5;
+                    serializeJson.itemStyle.normal.color.y = .5;
+                    serializeJson.itemStyle.normal.color.r = .45;
+                    serializeJson.itemStyle.normal.color.colorStops = [{
+                        offset: 0.95,
+                        color: serializeJson.itemStyle.normal.borderColor || "#999"
+                    }, {
+                        offset: 1,
+                        color: "#fff"
+                    }]
+                }
+
+                serializeJson.symbolSize = $.sortAmtQ(serializeJson.trxAmt)
+
+                serializeJson.label = {
+                    textStyle: {
+                        fontSize: $.sortFontSize(serializeJson.trxAmt)
+                    }
+                }
+
+                var serializelinkJson = ''
+                if (item.inputAmt != 0) {
+                    serializelinkJson = {
+                        source: i + 1,
+                        target: 0,
+                        value: item.inputCount + dataLanguage.times + " - " + item.inputAmt +
+                            dataLanguage.rmb,
+                    }
+                }
+
+
+                var serializelinkJson1 = ''
+                if (item.outputAmt != 0) {
+                    serializelinkJson1 = {
+                        source: 0,
+                        target: i + 1,
+                        value: item.outputCount + dataLanguage.times + " - " + item.outputAmt +
+                            dataLanguage.rmb,
+                    };
+                }
+                if (serializelinkJson.length != '') linkData.push(serializelinkJson);
+                if (serializelinkJson1.length != '') linkData.push(serializelinkJson1);
+                baseData.push(serializeJson);
+            });
+            return {
+                baseData: baseData,
+                linkData: linkData
+            }
+        },
+        /* 获取当前custId的客户信息 */
+        getCustInfo: function (chartData) {
+            var custInfo = {},
+                url = '/v1/custInfos',
+                dataLanguage = $.dataLanguage();
+            $.zAjax({
+                url: globalData.host() + url,
+                data: {
+                    custid: globalData.initValue.pageData.custId
+                },
+                success: function (data) {
+                    if (data.code == 0) {
+
+                        var result = data.data[0];
+                        if (!result) return;
+                        globalData.initData.baseItemData = result
+                        custInfo = {
+                            name: result.custId,
+                            custId: result.custNm,
+                            trxCountId: result.trxCountId,
+                            category: 0,
+                            draggable: true,
+                            tooltip: "<p>" + dataLanguage.customerName + "：" + result.custNm +
+                                "</p><p>" + dataLanguage.customerNum + "：" + result.custId +
+                                "</p><p>对手账号" + (result.oppEacId || '-') +
+                                '<p></p>交易汇总金额：' + (result.trxTotalAmt || '') + "</p><p>" +
+                                dataLanguage.transactionTimes + "： -</p><p>" + dataLanguage
+                                .transactionSum + "：-</p><p>" + dataLanguage
+                                .opponentCustomerName + "：-</p><p>" + dataLanguage
+                                .opponentCustomerNum + "：-</p>",
+                            des: dataLanguage.customerName + "：" + result.custNm + ";" +
+                                dataLanguage.customerNum + "：" + result.custId + ";" +
+                                dataLanguage.transactionTimes + "：0;" + dataLanguage
+                                .transactionSum + "：0;" + dataLanguage.opponentCustomerName +
+                                "：-;" + dataLanguage.opponentCustomerNum + "：-",
+                            itemStyle: {
+                                normal: {
+                                    color: "red",
+                                    opacity: 1
+                                }
+                            }
+                        };
+                        var linkData = {};
+
+                        chartData.baseData.unshift(custInfo);
+                        globalData.createRelationChart(chartData.baseData, chartData.linkData);
+
+                        globalData.list = chartData;
+
+                        //客户信息汇总
+                        var newData = {
+                            list: data.data,
+                            $btnType: globalData.initValue.pageData.$btnType
+                        };
+                        $("#customerInfo_globalDataTbodyW").html(template(
+                            "customerInfo_globalDataTbody", newData))
+
+                    };
+                }
+            });
+            return custInfo
+        },
+
+        //获取客户信息
+        getCustInfoData: function (custId, params) {
+            var url = '/v1/custInfos';
+
+            $.zAjax({
+                url: globalData.host() + url,
+                data: {
+                    custid: custId
+                },
+                success: function (data) {
+                    if (data) {
+
+                        //客户信息汇总
+                        var newData = {
+                            list: data.data,
+                            $btnType: globalData.initValue.pageData.$btnType
+                        };
+                        $("#customerInfo_globalDataTbodyOW").html(template(
+                            "customerInfo_globalDataTbody", newData));
+                    }
+                }
+            })
+        },
+
+        getTransMapData: function (custId, params, callback, pageData) {
+            var url = '/v1/transMaps';
+
+            $("#tradeTotal_globalDataTbodyOW").closest('table').find('th .zCheckAll').removeClass('zCheck');
+            $("#customerInfo_globalDataTbodyOW").closest('table').find('th .zCheckAll').removeClass('zCheck');
+            $('#customerInfo').addClass('col-md-6').css({
+                paddingLeft: 0,
+                paddingRight: 0,
+            });
+            $('#opponentCustomerInfo').addClass('col-md-6').css({
+                paddingLeft: 0,
+                paddingRight: 0,
+            }).show(500);
+
+            var data = {
+                custId: custId,
+                dateTime: globalData.initValue.pageData.sdate
+            };
+
+            pageData = pageData || globalData.pagination2;
+
+            pageData = $.extend(pageData, data);
+            
+            $.zAjax({
+                url: globalData.host() + url,
+                data: pageData,
+                type: 'GET',
+                success: function (data) {
+                    var total = data.pageInfo ? data.pageInfo.total : 0;
+
+                    data.pageInfo = data.pageInfo || {};
+
+                    globalData.echartsOption.currentClass = data.list;
+
+
+                    var checkedList = globalData.detailCheckedData.finalClickData.map(function (
+                        item) {
+                        return item.trxCountId;
+                    });
+                    data.checkedList = checkedList;
+
+                    $.zPageMethod({
+                        page: '#Pagination2',
+                        url: globalData.host() + url,
+                        tp: 'tradeTotal_globalDataTbodyO',          // 用于替换的HTML（ID）
+                        ele: '#tradeTotal_globalDataTbodyOW',       // 被替换的HTML（ID）
+                        total: total,
+                        data: pageData,
+                        list: data,
+                        $isNotNeddTem: true,
+                        getDataParams: [custId, params],
+                        paginationWrap: '#suspicious_tradeChain_transactionInfoSummaryOW',
+                        success: function (res) {
+
+                            globalData.echartsOption.currentClass = res.list;
+
+                            globalData.getTransMapDataCallback(res,callback);
+                        }
+                    });
+
+                    globalData.getTransMapDataCallback(data,callback);
+
+                }
+            })
+
+        },
+
+        getTransMapDataCallback: function (data,callback) {
+
+            var checkedList = [];
+
+            var checkedList = globalData.detailCheckedData.finalClickData.map(function (item) {
+                return item.trxCountId;
+            });
+
+            data.checkedList = checkedList;
+
+            data.isOpp = 'opp';
+            data.btnName = $.dataLanguage().detailTradingInfo;
+            data.$btnType = globalData.initValue.pageData.$btnType;
+
+            //debugger
+            $("#tradeTotal_globalDataTbodyOW").html(template("tradeTotal_globalDataTbodyO", data));
+
+            //初始化是否全部勾选
+            globalData.initAllCheckedStatus();
+
+            if(callback){
+                callback()
+            }
+
+        },
+
+        initCheckedStatus: function (ele) {
+            var eleClick = [],
+                checkedTimes = 0,
+                totalClick = [];
+
+            $(ele).find('tbody tr .zCBox').each(function () {
+
+                if ($(this).hasClass('zCheck')) {
+                    eleClick.push($(this).closest('tr').find('td.hide').html());
+                }
+
+                totalClick.push($(this).closest('tr').find('td.hide').html());
+            });
+
+            if (totalClick.length > 0 && totalClick.length == eleClick.length) {
+
+                $(ele).find('.zCheckAll').addClass('zCheck');
+
+            }
+
+        },
+
+        initAllCheckedStatus: function () {
+            globalData.initCheckedStatus("#detailInfo_globalDataTbodyWBox");
+            globalData.initCheckedStatus("#suspicious_tradeChain_transactionInfoSummaryWBox");
+            globalData.initCheckedStatus("#suspicious_tradeChain_transactionInfoSummaryOW");
+        },
+        //获取勾选表格项
+        getCheckedTableData: function (ele, index) {
+
+            var data = [],
+                val;
+            index = index || 1;
+            $(ele).find('.zCBox.zCheck').each(function () {
+                val = $(this).closest('tr').find('td').eq(index).text();
+                data.push(val);
+
+            });
+            return data.join(',');
+        },
+        init: function () {
+            if ($.getUrlParams().$showNum) {
+                globalData.initData.showNum = $.getUrlParams().$showNum;
+            }
+            this.getResultId();
+
+            //获取初始化的勾选， 图表
+            this.getCheckedChartData(function () {
+                //客户关系图
+                return function () {
+
+                    var data = $.extend($.dataLanguage(), {
+                        $btnType: globalData.initValue.pageData.$btnType
+                    });
+
+                    $('#main').prepend(template('suspicious_tradeChain', data));
+
+                    $.zCompositeData(common_params['rbac']['suspiciousTimeChoose'],
+                        '#suspicious_time', false);
+
+                    globalData.echart = echarts.init(document.getElementById('tradeChainChart'));
+
+                    $('#suspicious_time').change(function () {
+                        var val = $(this).val();
+                        var data = $.getUrlParams();
+                        data.$timeSpan = val;
+                        location.hash = $.builderUrl('/suspicious/screening/tradeChain',
+                            data);
+                    });
+
+                    $("#suspicious_number").change(function () {
+                        var val = $(this).val();
+                        var data = $.getUrlParams();
+                        data.$showNum = val;
+                        location.hash = $.builderUrl('/suspicious/screening/tradeChain',
+                            data);
+                    });
+
+                    $('#suspicious_time').val($.getUrlParams().$timeSpan);
+
+                    $('#suspicious_number').val($.getUrlParams().$showNum ? $.getUrlParams()
+                        .$showNum : globalData.initData.showNum);
+
+                    var val = $('#suspicious_time').val();
+                    val = Number(val)
+                    var sdate = $.getUrlParams().sdate;
+                    $('#endDate').val(sdate);
+                    var timer = new Date(sdate);
+                    timer.setMonth(timer.getMonth() - val);
+ 	                timer = $.timeFormat(timer, 'yyyy-MM-dd',true) // 涛哥2019.7.31在中行修改的
+                    $('#beginDate').val(timer);
+                    globalData.initValue.pageData.$timeSpan = val;
+                    globalData.getCustTableData();
+                    globalData.getRelationData(val);
+
+                }
+
+            });
+
+            this.event();
+        },
+
+        event: function () {
+            $("body").on("input propertychange", "textarea", function () {
+                var len = $(this).val().length;
+
+                if (len >= 500) {
+                    len = 500;
+                }
+
+                $(this).val($(this).val().substr(0, 500)).siblings().eq(0).html(len);
+            })
+
+            window.onresize = function () {
+                if (globalData.echart && globalData.echart.resize) {
+                    globalData.echart.resize();
+                }
+            }
+        },
+        qp: function () {
+            // 调整白色背景大小位置及层级
+            $('#suspicious_tradeChain_chart').addClass('add');
+            // 重置客户关系图容器高度
+            $('#tradeChainChart').css('height', '100%');
+            // 调整客户关系图
+            // globalData.echart.clear()
+            // globalData.echart.setOption(globalData.option)
+            globalData.echart.resize()
+        },
+
+        tcqp: function () {
+            // 调整白色背景大小位置及层级
+            $('#suspicious_tradeChain_chart').removeClass('add');
+            // 重置客户关系图容器高度
+            $('#tradeChainChart').css('height', '500px');
+            // 调整客户关系图
+            globalData.echart.clear()
+            globalData.echart.setOption(globalData.option)
+            globalData.echart.resize()
+        },
+
+        backPage: function () {
+            //window.history.go(-1)
+            location.hash = $.builderUrl('/suspicious/screening/result', $.getUrlParams());
+        },
+
+    };
+
+    $(document).ready(function () {
+        globalData.init();
+    })
+</script>

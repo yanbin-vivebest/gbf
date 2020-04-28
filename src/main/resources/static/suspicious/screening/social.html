@@ -1,0 +1,952 @@
+<!--  -->
+<!--社交网络分析-->
+<style type="text/css">
+    .suspicious_pages {
+        overflow: hidden;
+        padding-bottom: 30px;
+    }
+
+    .relative {
+        position: relative;
+    }
+
+    textarea {
+        min-height: 80px;
+        padding-bottom: 15px !important;
+    }
+
+    .textarealen {
+        font-size: 10px;
+        position: absolute;
+        right: 18px;
+        bottom: 0px;
+        transform: scale(.8);
+        -ms-transform: scale(.8);
+        /* IE 9 */
+        -webkit-transform: scale(.8);
+        /* Safari 和 Chrome */
+        -o-transform: scale(.8);
+        /* Opera */
+        -moz-transform: scale(.8);
+        /* Firefox */
+        color: #000;
+    }
+
+    .textarealen:after {
+        content: "\/500";
+        font-size: 10px;
+        color: #000;
+    }
+
+    .hyphen {
+        display: flex;
+        width: 100px;
+        height: 24px;
+        font-family: Gotham;
+        font-size: 24px;
+        align-items: flex-start;
+        align-content: center;
+        flex: auto;
+    }
+
+    #suspicious_tradeChain_chart.add {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        background: #FFFFFF;
+        z-index: 99999;
+    }
+
+    #suspicious_tradeChain_chart>#suspicioustt {
+        display: none;
+    }
+
+    #suspicious_tradeChain_chart.add>#suspicioustt {
+        display: block;
+    }
+</style>
+<script type="text/html" id="suspicious_socialHtml">
+    <div class="suspicious_pages col-md-12">
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious" style="overflow: hidden;">
+                <i class="fa fa-user"></i>
+                <span>{{socialNetWork}}</span>
+                <span class="btn btn-success btn-sm pull-right" onclick="globalData.backPage()">
+                    {{back}}
+                </span>
+                <span class="btn btn-primary btn-sm pull-right" onclick="globalData.qp()" style="margin-right: 20px;">
+                    全屏
+                </span>
+            </div>
+
+            <div id="searchData" class="panel-body">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label required">
+                            {{timeSpace}}:
+                        </label>
+                        <div class="col-md-8">
+                            <select name="status" class="form-control field" id="suspicious_time">
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="form-group">
+                        <label class="col-md-1" style="width: 1px;padding-top: 35px;"></label>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control field" id="beginDate" disabled="true"
+                                   name="beginDate" value="">
+                        </div>
+                        <div class="col-md-1">
+                            <p class="hyphen" style="display: inline-block;">~</p>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control field" id="endDate" disabled="true" name="endDate"
+                                   value="">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="col-md-4">显示个数：</label>
+                        <div class="col-md-8">
+                            <select name="status" class="form-control" id="suspicious_number">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-body" id="suspicious_tradeChain_chart" style="position: relative;">
+                <!-- 可疑洗钱网络关系图全屏时显示，顶部导航栏 -->
+                <div class="panel panel-lined" id="suspicioustt">
+                    <div class="panel-header panel-header-suspicious" style="overflow: hidden;">
+                        <!-- 图标 -->
+                        <i class="fa fa-user"></i>
+                        <!-- 标题 -->
+                        <span>{{ socialNetWork }}</span>
+                        <!-- 退出全屏按钮 -->
+                        <span class="btn btn-primary btn-sm pull-right" onclick="globalData.tcqp()" style="margin-right:20px;">
+                            退出全屏
+                        </span>
+                    </div>
+                </div>
+
+                <div id="tradeChainChart" style="width: 100%;height: 500px;"></div>
+                <div class="col-md-12 center" id="suspicious_chart_btn"
+                     style="position: absolute;bottom: 20px; left: 0;width: 100%">
+                    {{each $lvListData as item i}}
+                    {{if item.value == $lvListInitValue}}
+                    <span class="btn btn-default btn-primary"
+                          onclick="globalData.choseLv('{{item.value}}')">{{item.name}}</span>
+                    {{else}}
+                        <span class="btn btn-default"
+                              onclick="globalData.choseLv('{{item.value}}')">{{item.name}}</span>
+                        {{/if}}
+                        {{/each}}
+                </div>
+            </div>
+        </div>
+        {{if $btnType != 'list'}}
+        <!-- <div class="panel panel-lined" >
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i><span>{{analysisNote}}</span></div>
+            <div class="panel-body col-md-12 suspicious_result_consAy">
+                <div class="relative">
+                    <textarea class="" name="" id="suspicious_analysisNote" cols="30" rows="10" maxlength="500"></textarea>
+                    <i class="textarealen">0</i>
+                </div>
+                
+                <span class="btn btn-primary pull-right" onclick="globalData.saveAnalysisNote()">{{saveAnalysisNote}}</span>
+                
+            </div>
+        </div> -->
+        {{/if}}
+    </div>
+</script>
+
+<script>
+    var globalData = {
+        initValue: {
+            socialNetTitle: {
+                zh_cn: '可疑洗钱网络',
+                en_us: 'Suspicious money laundering network ',
+                zh_cht: '可疑洗钱网络',
+            },
+            saveTips: {
+                zh_cn: '保存成功！',
+                en_us: 'Save successfully!',
+                zh_cht: '保存成功！',
+            },
+            person: {
+                zh_cn: '人物',
+                en_us: 'Person',
+                zh_cht: '人物',
+            },
+            family: {
+                zh_cn: '家人',
+                en_us: 'Family',
+                zh_cht: '家人',
+            },
+            friend: {
+                zh_cn: '朋友',
+                en_us: 'Friends',
+                zh_cht: '朋友',
+            },
+            customerNum: {
+                zh_cn: '客户编号',
+                en_us: 'Customer Number',
+                zh_cht: '客戶編號',
+            },
+            lvText: {
+                zh_cn: '层级',
+                'en_us': 'Class',
+                'zh_cht': '層級'
+            },
+            lvListInitValue: 1,
+            lvList: {
+                zh_cn: [{
+                        value: 1,
+                        name: '层级一'
+                    },
+                    {
+                        value: 2,
+                        name: '层级二'
+                    },
+                    {
+                        value: 3,
+                        name: '层级三'
+                    },
+                    /*{
+                        value: 4,
+                        name: '层级四'                        
+                    },
+                    {
+                        value: 5,
+                        name: '层级五'                      
+                    },
+                    {
+                        value: 6,
+                        name: '层级六'
+                    }*/
+                ],
+                en_us: [{
+                        value: 1,
+                        name: 'Class 1'
+                    },
+                    {
+                        value: 2,
+                        name: 'Class 2'
+                    },
+                    {
+                        value: 3,
+                        name: 'Class 3'
+                    },
+                    /*{
+                        value: 4,
+                        name: 'Class 4'
+                    },
+                    {
+                        value: 5,
+                        name: 'Class 5'
+                    },
+                    {
+                        value: 6,
+                        name: 'Class 6'
+                    }*/
+                ],
+                zh_cht: [{
+                        value: 1,
+                        name: '層級一'
+                    },
+                    {
+                        value: 2,
+                        name: '層級二'
+                    },
+                    {
+                        value: 3,
+                        name: '層級三'
+                    },
+                    /*{
+                        value: 4,
+                        name: '層級四'
+                    },
+                    {
+                        value: 5,
+                        name: '層級五'
+                    },
+                    {
+                        value: 6,
+                        name: '層級六'
+                    }*/
+                ]
+            }
+        },
+        // 全局请求参数
+        data: {
+            pageInfo: {
+                pageNum: 1,
+                pageSize: 10
+            }
+        },
+        echart: '',
+        host: function (str) {
+            return project.host(str);
+        },
+
+        getUrlData: function () {
+            var getObj = $.getUrlParams();
+
+            this.initValue.pageData = getObj;
+        },
+
+        indexColor: function (lv) {
+            if (parseInt(lv) == 0) return 'red'
+            if (!globalData.option) return '#009800'
+            return globalData.option.series[0].categories[lv].itemStyle.normal.color
+        },
+        // 社交网络分析图 选择层级
+        choseLv: function (lv) {
+
+            if ($(this).hasClass('btn-primary')) {
+                return;
+            }
+
+            $("#suspicious_chart_btn").find("span").eq(lv - 1).removeClass('btn-primary').addClass(
+                'btn-primary').siblings().removeClass('btn-primary');
+
+            this.initValue.lvListInitValue = lv;
+            this.getRelationData(lv);
+
+            lv = Number(lv) || 0
+        },
+
+        //保存分析笔记
+        saveAnalysisNote: function (type) {
+
+            var val = $("#suspicious_analysisNote").val(),
+                url = '/v1/conclusionInfos/analysis';
+
+            var pageData = globalData.initValue.pageData;
+
+            var data = {
+                screentId: pageData.outId,
+                roleId: JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+
+                notBookType: 2,
+                content: val,
+                userId: JSON.parse(sessionStorage.getItem('data')).user.userId,
+                name: JSON.parse(sessionStorage.getItem('data')).user.userName,
+            };
+
+            if (globalData.noteId) {
+                data.id = globalData.noteId
+            }
+
+            $.zAjax({
+                url: globalData.host() + url,
+                type: 'post',
+                data: data,
+                isString: true,
+                success: function (data) {
+                    globalData.noteId = data.data;
+                    layer.msg('保存成功！', {
+                        icon: 1
+                    });
+                }
+            })
+
+        },
+        getData: function (key) {
+            if (!key) {
+                return '';
+            }
+            return this.initValue[key][lang.getLang()];
+        },
+        //获取图表数据
+        getRelationData: function (lvl) {
+            var url = '/v1/socialNetwork';
+
+            lvl = lvl || this.initValue.lvListInitValue;
+
+            $.zAjax({
+                url: this.host() + url,
+                data: {
+                    custId: this.initValue.pageData.custId,
+                    timeSpan: this.initValue.pageData.$timeSpan,
+                    // size: this.initValue.pageData.$size,
+                    size: $("#suspicious_number").val(),            // 获取显示个数
+                    dateTime: this.initValue.pageData.sdate,
+                    lvl: lvl,
+                },
+                type: 'GET',
+                success: function (data) {
+                    if (data.code == 0) {
+                        data = data.data;
+                        var dataTotal = [];
+
+                        data = data.filter(function (item) {
+                            if (dataTotal.indexOf(item.custId) >= 0) {
+                                return 0
+                            } else {
+                                dataTotal.push(item.custId);
+                                return 1;
+                            }
+                        })
+
+                        var result = data,
+                            chartData = globalData.serializeChartData(data),
+                            linkData = globalData.serializeChartDataLink(chartData, data);
+
+                        linkData.unshift({
+                            "source": 0,
+                            "target": 0,
+                            "value": 0
+                        });
+
+                        globalData.createRelationChart(chartData, linkData);
+
+                    } else {
+                        layer.msg(data.desc);
+                    }
+                }
+            });
+
+        },
+        dealStr: function (data) {
+            if (data.length < 5) {
+                return data;
+            }
+
+            var cl = 3,
+                times, newArr = '';
+            if (data.length <= 9) {
+                cl = 2
+            }
+
+            times = Math.floor(data.length / cl),
+                newArr = '';
+
+            for (var i = 0; i < (cl); i++) {
+                if (i == cl - 1) {
+                    newArr += data.substr(times * i);
+                } else {
+                    newArr += data.substr(times * i, times) + '\n';
+                }
+
+            }
+            return newArr;
+
+        },
+
+        getDicData: function (fn, type) {
+            var url = "";
+            type = type || 'custType';
+            url = '/v1/dictDatas/dictDatasSelect/' + type;
+
+            $.zAjax({
+                url: globalData.host('dicts') + url,
+                success: function (data) {
+                    data = data || [];
+                    fn && fn.call(globalData, data);
+                }
+
+            })
+        },
+        createRelationChart: function (data, linkData) {
+
+            var option = globalData.option = {
+                title: {
+                    text: this.getData('socialNetTitle')
+                },
+                tooltip: {
+                    // formatter: function (x) {
+                    //     return globalData.getData('customerNum') + "：" + x.data.custId;
+                    // }
+                },
+                label: {
+                    normal: {
+                        show: true,
+                        textStyle: {
+                            fontSize: 12
+                        }
+
+                    }
+                },
+                legend: [{
+                    left: "20",
+                    top: "150",
+                    orient: "vertical",
+                    selectedMode: true,
+                    show: true,
+                    data: [{
+                            name: 1,
+                            icon: 'circle'
+                        },
+                        {
+                            name: 2,
+                            icon: 'circle'
+                        },
+                        {
+                            name: 3,
+                            icon: 'circle'
+                        },
+                        /*{
+                            name: 4,
+                            icon: 'circle'
+                        },
+                        {
+                            name: 5,
+                            icon: 'circle'
+                        },
+                        {
+                            name: 6,
+                            icon: 'circle'
+                        }*/
+                    ],
+                    formatter: function (data) {
+                        if (typeof data == 'string') {
+                            return data;
+                        }
+                        return globalData.getData('lvText') + data;
+                    }
+                }],
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    symbolSize: 60,
+                    roam: true,
+                    focusNodeAdjacency: true,
+                    edgeSymbol: ['circle', 'arrow'], //箭头样式
+                    edgeSymbolSize: [5, 10], //箭头大小
+                    animationDurationUpdate: 0,
+                    tooltip: {
+                        formatter: function (res) {
+                            var data = res ? res.data : {},
+                                result = '';
+
+                            if (data.value) {
+                                return data.value;
+                            }
+
+                            result = data.sourceName + '>' + data.targetName + ' : ' + data
+                                .value;
+                            return result;
+                        }
+                    },
+                    categories: [{
+                            name: 0,
+                            itemStyle: {
+                                normal: {
+                                    color: "red"
+                                }
+                            }
+                        },
+                        {
+                            name: 1,
+                            itemStyle: {
+                                normal: {
+                                    // 绿色
+                                    color: "#009800",
+                                }
+                            }
+                        },
+                        {
+                            name: 2,
+                            itemStyle: {
+                                normal: {
+                                    // 深蓝色
+                                    color: "#337ab7",
+                                }
+                            },
+                        },
+                        {
+                            name: 3,
+                            itemStyle: {
+                                normal: {
+                                    color: "#66a4c1",
+                                }
+                            },
+                        },
+                        {
+                            name: 4,
+                            itemStyle: {
+                                normal: {
+                                    color: "#5bc0de",
+                                }
+                            }
+                        },
+                        {
+                            name: 5,
+                            itemStyle: {
+                                normal: {
+                                    color: "#f0ad4e",
+                                }
+                            }
+                        },
+                        {
+                            name: 6,
+                            itemStyle: {
+                                normal: {
+                                    color: "#d9534f",
+                                }
+                            }
+                        },
+                    ],
+                    label: {
+                        normal: {
+                            show: true,
+                            textStyle: {
+                                fontSize: 12
+                            },
+                            formatter: function (data) {
+                                return globalData.dealStr(data.data.value)
+                            }
+                        }
+                    },
+                    force: {
+                        repulsion: 1500,
+                        edgeLength: [100, 100],
+                        layoutAnimation: false,
+                    },
+                    draggable: true,
+                    itemStyle: {
+                        normal: {
+                            opacity: 1,
+                        }
+                    },
+                    lineStyle: {
+                        normal: {
+                            width: 1,
+                            color: '#4b565b',
+                            opacity: 1,
+                            curveness: 0.1,
+                        }
+                    },
+                    edgeLabel: {
+                        normal: {
+                            show: true,
+                            textStyle: {
+                                fontSize: 10
+                            },
+                            formatter: '{c}'
+                        }
+                    },
+                    data: data,
+                    links: linkData
+                }]
+            };
+
+            globalData.renderChartFn(option);
+            return option;
+        },
+
+        renderChartFn: function (option) {
+            window.echart = echarts.init(document.getElementById('tradeChainChart'));
+
+            globalData.echarttDom = echart;
+
+            globalData.getDicData(function (data) {
+                var legend2 = $.extend({}, option.legend[0]);
+                legend2.top = parseFloat(legend2.top) - 30;
+                legend2.left = parseFloat(legend2.left) - 20
+                legend2.orient = 'horizontal';
+                legend2.selectedMode = false;
+
+                legend2.data = [{
+                        name: data[0].dictLabel,
+                        icon: (function () {
+                            var val = ''
+                            data[0].dictValue == 1 && (val = 'circle')
+                            data[0].dictValue == 0 && (val = 'arrow')
+                            data[0].dictValue == 2 && (val = 'roundRect')
+                            return val
+                        })(),
+                        textStyle: {
+                            // color: '#B03A5B',
+                            fontWeight: 800,
+                        }
+                    },
+                    {
+                        name: data[1].dictLabel,
+                        icon: (function () {
+                            var val = ''
+                            data[1].dictValue == 1 && (val = 'circle')
+                            data[1].dictValue == 0 && (val = 'arrow')
+                            data[1].dictValue == 2 && (val = 'roundRect')
+                            return val
+                        })(),
+                        textStyle: {
+                            // color: '#B03A5B',
+                            fontWeight: 800,
+                        }
+                    }
+                ];
+                option.legend.push(legend2);
+
+
+                option.series[0].categories.push({
+                    name: data[0].dictLabel,
+                    itemStyle: {
+                        normal: {
+                            color: "#B03A5B"
+                        }
+                    },
+
+                }, {
+                    name: data[1].dictLabel,
+                    itemStyle: {
+                        normal: {
+                            color: "#B03A5B"
+                        }
+                    },
+
+                });
+
+                console.log(option);
+                window.aa = option
+
+                echart.setOption(option, true);
+
+                globalData.echart = echart;
+                // echart.on("click", function (params) {
+
+                // }); 
+            })
+
+        },
+
+        /* 系列化图表的data */
+        serializeChartData: function (data) {
+
+            var list = [];
+            for (var k = 0; k < data.length; k++) {
+                var temp = {
+                    custId: data[k].custId,
+                    name: data[k].custId,   // 该值决定用户之间的关系网络指向，不得随意修改
+                    value: data[k].custNm,  // 该值决定用户名的显示，不得随意修改
+                    isSusCust: data[k].isSusCust,
+
+                    category: parseInt(data[k].lvl) >= 6 ? 6 : parseInt(data[k].lvl),
+                    draggable: true,
+                    // tooltip: data[k].custNm,
+                    // 设置颜色，如果是层级是0，说明是对手客户，则将颜色设置为Red，否则不设置颜色
+                    itemStyle: {
+                        normal: {
+                            color: parseInt(data[k].lvl) == 0 ? 'red' : "" // 终点客户
+                        }
+                    },
+                    oppCustId: data[k].linkData,        // 对手客户号
+                    lvl: data[k].lvl,                   // 层级
+                    totalTranAmt: data[k].totalTranAmt, // 交易额
+                };
+
+                if ($.isHw(temp.custId) && temp.category != 0 && data[k].ndoeType != 0) {
+                    temp.itemStyle.normal.shadowBlur = 30
+                    temp.itemStyle.normal.shadowColor = globalData.indexColor(temp.lvl)
+                }
+
+                // if (temp.isSusCust == '1') {
+                //     temp.itemStyle.normal.borderColor = globalData.indexColor(temp.lvl)
+                //     temp.itemStyle.normal.color = {}
+                //     temp.itemStyle.normal.color.type = 'radial'
+                //     temp.itemStyle.normal.color.x = .5
+                //     temp.itemStyle.normal.color.y = .5
+                //     temp.itemStyle.normal.color.r = .45
+                //     temp.itemStyle.normal.color.colorStops = [{
+                //             offset: 0.95,
+                //             color: globalData.indexColor(temp.lvl)
+                //         },
+                //         {
+                //             offset: 1,
+                //             color: '#fff'
+                //         }
+                //     ]
+                // }
+                temp.symbolSize = $.sortAmtQ(temp.totalTranAmt)
+
+                //如果当前类型是组织，添加边框
+                if (data[k].nodeType != 1) {
+                    // temp.itemStyle.normal = $.extend(temp.itemStyle.normal, {
+                    //     borderWidth: 2,
+                    //     borderColor: '#cc6600',
+                    //     symbolSize: 60,
+                    // })
+                    // temp.symbol = 'roundRect';
+                }
+
+                if (data[k].nodeType == 1) {
+                    temp.symbol = 'circle';
+                }
+                if (data[k].nodeType == 0) {
+                    // temp.symbol = 'arrow';
+                }
+                if (data[k].nodeType == 2) {
+                    temp.symbol = 'roundRect';
+                }
+
+                list.push(temp)
+            }
+            return list
+        },
+
+        /* 系列化图表的link-data */
+        serializeChartDataLink: function (data, linkData) {
+
+            var list = [],
+                isHave = false;
+            for (var k = 0; k < linkData.length; k++) {
+                var link = linkData[k]['linkData'];
+                for (var n in link) {
+                    isHave = false;
+                    //去除重复的项
+                    for (var i = 0; i < list.length; i++) {
+
+                        if (list[i] && list[i].target == this.getIndex(data, linkData[k]['custId']) && list[i]
+                            .source == this.getIndex(data, link[n])) {
+                            isHave = true;
+                            break;
+                        }
+                    }
+
+                    var dataItem = globalData.getDataItem(data, link[n]);
+                    list.push({
+                        // source: this.getIndex(data, linkData[k]['custId']),
+                        // target: this.getIndex(data, link[n]),
+                        // sourceName: linkData[k].custNm,
+                        // targetName: dataItem.name,
+                        source: this.getIndex(data, link[n]),
+                        target: this.getIndex(data, linkData[k]['custId']),
+                        sourceName: dataItem.name,
+                        targetName: linkData[k].custNm,
+                        // value: linkData[k]['custId'] + "-" + link[n],
+                        value: linkData[k].linkStringData[link[n]],
+                        // value:link[n].linkStringData[linkData[k]],
+                        parentId: linkData[k]['custId']
+                    })
+
+                }
+
+            }
+            return list
+        },
+        getIndex: function (data, search) {
+            var index = -1;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i]['custId'] == search) {
+                    index = i;
+                }
+            }
+            return Number(index);
+        },
+
+        getDataItem: function (data, custId) {
+            var result = {},
+                checkedStr = 'custId';
+            for (var i = 0; i < data.length; i++) {
+                if (data[i][checkedStr] == custId) {
+                    result = data[i];
+                    break;
+                }
+            }
+            return result;
+        },
+
+        init: function () {
+            var data = $.dataLanguage();
+
+            this.getUrlData();
+
+            data.$lvListData = this.initValue.lvList[lang.getLang()];
+            data.$lvListInitValue = this.initValue.lvListInitValue;
+            data.$btnType = this.initValue.pageData.$btnType;
+
+            //客户关系图
+            // this.getRelationData();
+            $('#main').prepend(template('suspicious_socialHtml', data));
+
+            $('#main').animate({
+                'scrollTop': 0
+            }, 700)
+
+            $.zCompositeData(common_params['rbac']['suspiciousTimeChoose'], '#suspicious_time', false)									
+            this.event();
+
+            $("#suspicious_number").change(function () {
+                var val = $(this).val()
+                val = Number(val)
+                globalData.initValue.pageData.$size = val;
+                globalData.getRelationData()
+            })
+
+            $("#suspicious_number").val(20)
+            $("#suspicious_number").trigger('change')
+
+            $('#suspicious_time').change(function () {
+                var val = $(this).val()
+                val = Number(val)
+                var sdate = $.getUrlParams().sdate
+                $('#endDate').val(sdate)
+                var timer = new Date(sdate)
+                timer.setMonth(timer.getMonth() - val)
+                timer = $.timeFormat(timer, 'yyyy-MM-dd',true) //涛哥2019.7.31在中行修改的
+                $('#beginDate').val(timer)
+               // globalData.initValue / pageData.$timeSpan = val
+                globalData.getRelationData(val)
+            })
+
+            $('#suspicious_time').val($.getUrlParams().$timeSpan)
+            $('#suspicious_time').trigger('change')
+
+        },
+
+        event: function () {
+            //输入框
+            $("body").on("input propertychange", "textarea", function () {
+                var len = $(this).val().length;
+
+                if (len >= 500) {
+                    len = 500;
+                }
+
+                $(this).val($(this).val().substr(0, 500)).siblings().eq(0).html(len);
+            })
+
+            window.onresize = function () {
+                if (globalData.echart && globalData.echart.resize) {
+                    globalData.echart.resize();
+                }
+            }
+        },
+        qp: function () {
+            $('#suspicious_tradeChain_chart').addClass('add');
+            $('#tradeChainChart').css('height', '100%');
+            globalData.echart.clear()
+            globalData.echart.setOption(globalData.option)
+            globalData.echart.resize()
+
+        },
+        tcqp: function () {
+            $('#suspicious_tradeChain_chart').removeClass('add')
+            $('#tradeChainChart').css('height', '500px');
+            globalData.echart.clear()
+            globalData.echart.setOption(globalData.option)
+            globalData.echart.resize()
+        },
+        backPage: function () {
+            window.history.go(-1)
+        }
+
+    };
+
+    $(document).ready(function () {
+        globalData.init();
+    })
+</script>

@@ -1,0 +1,555 @@
+
+<style type="text/css">
+    .suspicious_pages{
+        overflow: hidden;
+        padding-bottom: 30px;
+    }
+    .search-sub-title-txt{
+        background: #f5f5f5;
+        margin-top:0;
+        margin-bottom: 0;
+        padding: 15px 10px;
+        font-size: 14px;
+    }
+    .commonSearchDetail_table_tab{
+        overflow: hidden;
+    }
+    .commonSearchDetail_table_tab span{
+        display: inline-block;
+        float:left;
+        padding: 5px 10px;
+        border: 1px solid #999;
+        margin-left: 0;
+        margin-right: 0;
+        transition: all .3s;
+        cursor: pointer;
+    }
+    .commonSearchDetail_table_tab span.active{
+        background: #5974d9;
+        border-color: #5974d9;
+        color: #fff;
+    }
+    /* 当表格内容超出表格容器时，出现滚动条 */
+    .table-container{
+        overflow-y: scroll;
+    }
+    /* 控制表格表头下的th，不进行换行 */
+    .table-container table thead tr th{
+        white-space: nowrap;
+    }
+</style>
+
+<script type="text/html" id="suspicious_commonSearchDetail">
+    <div class="suspicious_pages" id="suspicious_commonSearchDetail">
+        <div class="panel panel-lined">
+            <div class="panel-body">
+                <!-- 查询表单 -->
+                <div class="panel-body" id="searchData"></div>
+                <!-- 查询结果表格 + 分页按钮组 -->
+                <div id="commonSearchDetail_table"></div>
+            </div>
+        </div>
+        <div id="dataView" style="width: 100%;"></div>
+    </div>
+</script>
+
+<script type="text/html" id="commonSearchDetail_tableW">
+    {{if resultList && resultList.length > 0}}
+    <div class="commonSearchDetail_table_tab">
+        {{each resultList as value i}}
+        <span onclick="globalData.jgjClick('{{i}}')">结果集{{i + 1}}</span>
+        {{/each}}
+    </div>
+    {{each resultList as value i}}
+    <div class="commonSearchDetail_table-box">
+        <!-- 表格容器 -->
+        <div class="table-container">
+            <table class="table table-bordered table-striped">
+                <thead class="thead" id="search_var_thead{{i}}"></thead>
+                <tbody id="search_var_tbody{{i}}"></tbody>
+            </table>
+        </div>
+        <!-- 分页按钮组 -->
+        <div class="page" id="Pagination_wrap{{i}}">
+            {{if resultList.length == 1}}
+                <div class="pager_container" id="Pagination{{i}}" data-pagination="pagination{{i}}">
+            {{else}}
+                <div class="pager_container" id="Pagination{{i}}" data-getData="pageGetData" data-pagination="pagination{{i}}">
+            {{/if}}
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{/if}}
+</script>
+
+<script type="text/html" id="commonSearchDetail_list">
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    {{value.inputType | getInputTypeHtml: value.name, value}}
+    {{/each}}
+    {{/if}}
+    <div class="col-md-4">
+        <div class="form-group">
+            <span id="searchBtn" class="btn btn-primary pull-left fa fa-search" onclick="globalData.getData()">{{$lg.search}}</span>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="commonSearchDetail_var_theadW">
+    {{if $thData && $thData.length > 0}}
+    <tr>
+    {{each $thData as value i}}
+        <th >
+            {{value}}
+        </th>
+    {{/each}}
+    </tr>
+    {{/if}}
+</script>
+
+<script type="text/html" id="commonSearchDetail_var_tbodyW">
+    {{if $tBodyData && $tBodyData.length > 0}}
+    {{each $tBodyData as value i}}
+    <tr>
+        {{each $thData as searchV i}}
+        <td>
+            {{value[searchV]}}
+        </td>
+        {{/each}}
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="29" style="text-align: left;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<script>
+        template.helper('getInputTypeHtml', function(inputType, name, value){
+            var result = '';
+            if(!value.validFlg){
+                return result;
+            }
+
+            result = '<div class="col-md-4"><div class="form-group"><label class="col-md-4 control-label">'+value.chnName+':</label><div class="col-md-8"><input type="password" style="display:none"/>';
+            switch (inputType){
+                case 1:
+
+                    if(value.dataType == 2){
+                        result += '<input type="number" name="'+name+'" class="form-control field" autocomplete="off" value="'+value.defaultValue+'" ';
+                    }else{
+                        result += '<input type="text" name="'+name+'" class="form-control field" autocomplete="off" value="'+value.defaultValue+'" ';
+                    }
+
+                    if(value.required){
+                        result += ' required ';
+                    }
+
+                    result += ' />'
+                break;
+
+                case 2:
+                    if(value.dataType == 2){
+                        result += '<input type="number" name="'+name+'" id="'+name+'" class="form-control field"   value="'+value.defaultValue+'" ';
+                    }else{
+                        result += '<input type="text" name="'+name+'" id="'+name+'" class="form-control field"   value="'+value.defaultValue+'" ';
+                    }
+
+                    if(value.required){
+                        result += ' required ';
+                    }
+
+                    result += ' />'
+                break;
+
+                case 3:
+                    result += '<input type="text" readOnly style="background: #fff;" name="'+name+'" id="'+name+'" class="form-control field"   value="'+value.defaultValue+'" ';
+
+                    if(value.required){
+                        result += ' required ';
+                    }
+
+                    result += ' />'
+                    
+                break;
+                case 4:
+                    result += result = '<select class="form-control field" name="'+name+'"';
+
+                    if(value.required){
+                        result += ' required ';
+                    }
+
+                    result += ' ></select>'
+                   
+                break;
+                case 5:
+                    result += '<select class="form-control field" multiple name="'+name+'" ';
+
+                    if(value.required){
+                        result += ' required ';
+                    }
+
+                    result += ' ></select>'
+                    
+                break;
+            }
+
+            result += '</div></div></div>';
+            return result;
+        })
+
+    var globalData = {
+        initValue: {
+            listData: [],
+            dtvCode: '',
+            subDtvCode: '',
+            dataTrivecndvarsList: [],
+            isShowTitle: false,
+            searchData: {},
+            totalData: [],
+
+        },
+
+        pagination0: {
+            pageNum: 1,
+            pageSize: 10
+        },
+
+        getDataValue: function(key){
+            if(!key){
+                return '';
+            }
+            return   this.initValue[key][lang.getLang()];
+        },
+        host: function(obj){
+            return project.host(obj); 
+        },
+        getDatatrivecndvars: function(code, fn){
+            //查询条件变量列表
+            var url = '/v1/datatrivecndvars';
+            var search = $.zSearchFn({}, '#dataView .field');                
+            $.zAjax({
+                    url: globalData.host() + url,
+                    data: {
+                        dtvCode: code ? code : search.dtvCode
+                    },
+                    success: function(data){
+                        if(data.code == 0){
+                            globalData.initValue.dataTrivecndvarsList = data;
+                            if(fn){
+                                fn(data);
+                            }else{
+                                data.$lg = $.dataLanguage();
+                                //插入筛选条件
+                                $('#searchData').html(template('commonSearchDetail_list', data));
+                                //日期格式化
+                                $.dateV("#searchData [name='beginDate']");
+                                $.dateV("#searchData [name='dateTime']");
+                                setTimeout(function(){
+                                    globalData.inDate(data.list);
+                                })
+                                globalData.initValue.searchData = data;
+                            }
+                        }else{
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+        },
+        inDate: function(data){
+            //如果有日期筛选，初始化日期
+            data.forEach(function(item){
+                if(item.inputType == 3){
+                    laydate.render({
+                        elem: '#' + item.name,
+                        lang:$.getLayDateLang(),
+                    });
+                }
+            })
+        },
+        getDtvCode: function(searchData){
+            var hash = window.location.hash.split('?')[1].split('&');
+
+            var result = {};
+
+            hash.forEach(function(item){
+                var itemS = item.split('=');
+                result[itemS[0]] = itemS[1];
+            });
+
+            globalData.initValue.dtvCode = result.dtvCode;
+            globalData.initValue.subDtvCode = result.subDtvCode;
+
+            globalData.getDatatrivecndvars(globalData.initValue.dtvCode);
+        },
+        jgjClick: function(i){
+            $("#commonSearchDetail_table").find('span').eq(i).addClass('active').siblings('span').removeClass('active');
+            $("#commonSearchDetail_table").find('.commonSearchDetail_table-box').eq(i).show().siblings('.commonSearchDetail_table-box').hide();
+        },
+        pageGetData: function(){
+            console.log(123)
+        },
+        getData: function(){
+            /* 预处理 */
+            // 第一层处理：去除开始日期和结束日期
+            // let dealResult1 = $("#searchData .field").slice(0, -2)
+            let dealResult = $("#searchData .field").filter((index, item) => {
+                return item.name != 'beginDate' && item.name != 'dateTime'
+            })
+            let flag = false;
+            for (let i = 0; i < dealResult1.length; i++) {
+                if (!!dealResult1[i].value) {
+                    flag = true
+                    break
+                }
+            }
+            if(!flag){
+                layer.alert("查询条件过少，请输入查询条件")
+                return
+            }
+            /* // 主体客户号
+            var trs_entityid = $("input[name='trs_entityid']").val()
+            // 主体客户名称
+            var trs_entityname = $("input[name='trs_entityname']").val()
+            // 主体客户账号
+            var trs_entityac = $("input[name='trs_entityac']").val()
+            // 主体客户证件号
+            var trs_idnumber = $("input[name='trs_idnumber']").val()
+            // 对手客户号
+            var trs_beneficiaryid = $("input[name='trs_beneficiaryid']").val()
+            // 对手客户名称
+            var trs_beneficiaryname = $("input[name='trs_beneficiaryname']").val()
+            // 对手账号
+            var trs_benfacc = $("input[name='trs_benfacc']").val()
+            // 对手证件号
+            var trs_data2 = $("input[name='trs_data2']").val()
+            // IP地址
+            var ip_addr = $("input[name='ip_addr']").val()
+            // MAC地址
+            var mac_addr = $("input[name='mac_addr']").val()
+            // 终端标识
+            var device_id = $("input[name='device_id']").val()
+            // 非柜台交易方式的设备代码
+            var txs_ncounter_devicecode = $("input[name='txs_ncounter_devicecode']").val()
+            // 这几个数是否任意一个为空，是则弹窗“查询条件过少”
+            if (
+                (trs_entityid == null || trs_entityid == "") &&
+                (trs_entityname == null || trs_entityname == "") &&
+                (trs_entityac == null || trs_entityac == "") &&
+                (trs_idnumber == null || trs_idnumber == "") &&
+                (trs_beneficiaryid == null || trs_beneficiaryid == "") &&
+                (trs_beneficiaryname == null || trs_beneficiaryname == "") &&
+                (trs_benfacc == null || trs_benfacc == "") &&
+                (trs_data2 == null || trs_data2 == "") &&
+                (ip_addr == null || ip_addr == "") &&
+                (mac_addr == null || mac_addr == "") &&
+                (device_id == null || device_id == "")
+            ) {
+                layer.alert("查询条件过少，请输入查询条件")
+                return
+            } */
+            // 开始日期 和 结束日期
+            var beginDate = $("input[name='beginDate']").val()
+            var dateTime = $("input[name='dateTime']").val()
+            if (beginDate != '' && dateTime != '') {
+                if (new Date(dateTime).getTime() - new Date(beginDate).getTime() > 31536000000) {
+                    layer.alert("时间跨度超过一年")
+                    return
+                }
+            }
+            /* 开始请求 */
+            //获取查询列表
+            var url = '/v1/datatraiveexcutesql';
+            var pageInfo = globalData.pagination0;
+            var paramArray=[];
+            var data = {
+                paramArray:''
+            };
+
+            $("#searchData .field").each(function(item){
+                var conId = $(this).attr('name');
+                var paramVal = $(this).val();
+
+                paramArray.push({conId: conId, paramVal: paramVal});
+            })
+            for(var i in data){
+                if(!data[i] && data[i] !== 0){
+                    delete data[i];
+                }
+            }
+
+            data.dtvCode = globalData.initValue.dtvCode;
+            data.paramArray = JSON.stringify(paramArray);
+            data.pageSize = globalData.pagination0.pageSize;
+            data.pageNum = globalData.pagination0.pageNum;
+
+            var ajaxData = data;
+            $.zAjax({
+                    url: globalData.host() + url,
+                    data: data,
+                    success: function(data){
+                        if(data.code == 0){
+                           var total = data.data.pageInfo && data.data.pageInfo[0].record;
+                            //动态插入多个表格
+                            $('#commonSearchDetail_table').html(template('commonSearchDetail_tableW', data.data));
+
+                            $("#commonSearchDetail_table").find('.commonSearchDetail_table-box').eq(0).show().siblings('.commonSearchDetail_table-box').hide();
+                            $("#commonSearchDetail_table").find('span').eq(0).addClass('active').siblings('span').removeClass('active');
+
+                           
+                           // data.data.resultList.forEach(function(item, i){
+                                   
+                           //      var thData, tBodyData, itemD = data;
+                           //      thData = itemD.data.chineseColumNameList[i];
+                           //      tBodyData = item;
+                           //      itemD.$lg = $.dataLanguage();
+                           //      itemD.$searchData = globalData.initValue.searchData;
+                           //      itemD.$thData = thData;
+                           //      itemD.$tBodyData = tBodyData;
+                           //      itemD.$noClick = false;
+                           //      globalData.initValue.totalData = data.data.resultList;
+                           //          //生成表头
+                           //      $('#search_var_thead' + i).html(template('commonSearchDetail_var_theadW', itemD));
+                           //      $('#search_var_tbody' + i).html(template('commonSearchDetail_var_tbodyW', itemD));
+                           //  }) 
+                           
+                            
+                            if(data.data.pageInfo){
+                                data.data.resultList.forEach(function(item, i){
+                                       
+                                    var thData, tBodyData, itemD = data;
+                                    thData = itemD.data.chineseColumNameList[i];
+                                    tBodyData = item;
+                                    itemD.$lg = $.dataLanguage();
+                                    itemD.$searchData = globalData.initValue.searchData;
+                                    itemD.$thData = thData;
+                                    itemD.$tBodyData = tBodyData;
+                                    itemD.$noClick = false;
+                                    globalData.initValue.totalData = data.data.resultList;
+                                        //生成表头
+                                    $('#search_var_thead' + i).html(template('commonSearchDetail_var_theadW', itemD));
+                                    $('#search_var_tbody' + i).html(template('commonSearchDetail_var_tbodyW', itemD));
+                                }) 
+                                $.zPageMethod2({
+                                    page:'#Pagination0',
+                                    url: globalData.host() + url,
+                                    tp:'commonSearchDetail_var_tbodyW',
+                                    ele: "#search_var_tbody0",
+                                    total:total,
+                                    data:ajaxData,
+                                    list:data,
+                                    success: function(res){ 
+                                        if(res.code == 0){
+                                           var thData, tBodyData, data = res;
+
+                                            thData = res.data.chineseColumNameList[0];
+                                            tBodyData = res.data.resultList[0];
+                                            data.$lg = $.dataLanguage();
+                                            data.$searchData = globalData.initValue.searchData;
+                                            data.$thData = thData;
+                                            data.$tBodyData = tBodyData;
+                                            data.$noClick = false;
+                                            globalData.initValue.totalData = res.data.resultList;
+
+                                            $('#search_var_thead0').html(template('commonSearchDetail_var_theadW', data));
+                                            $('#search_var_tbody0').html(template('commonSearchDetail_var_tbodyW', data)); 
+                                        }else{
+                                            layer.msg(res.errMsg);
+                                        }
+                                        
+                                    }
+                                });
+                            }else{
+
+                                data.data.resultList.forEach(function(item, i){
+                                    var total = item.length, list = item;
+                                    globalData['pagination'+i] = {
+                                        pageSize: 10,
+                                        pageNum: 1
+                                    };
+                                    var thData, tBodyData, itemD = data;
+
+                                    thData = itemD.data.chineseColumNameList[i];
+                                    tBodyData = item.slice(0,  globalData['pagination'+i].pageSize);
+                                    itemD.$lg = $.dataLanguage();
+                                    itemD.$searchData = globalData.initValue.searchData;
+                                    itemD.$thData = thData;
+                                    itemD.$tBodyData = tBodyData;
+                                    itemD.$noClick = false;
+
+                                    $('#search_var_thead' + i).html(template('commonSearchDetail_var_theadW', itemD));
+                                    $('#search_var_tbody' + i).html(template('commonSearchDetail_var_tbodyW', itemD));
+                                    $.zPageMethod2({
+                                        page:'#Pagination' + i,
+                                        url: globalData.host() + url ,
+                                        tp:'commonSearchDetail_var_tbodyW',
+                                        ele: "#search_var_tbody" + i,
+                                        total:total,
+                                        data:globalData['pagination'+i],
+                                        list:itemD,
+                                        $isNotNeddTem: true,
+                                        // getDataParams: [type, ele],
+                                        paginationWrap: "#Pagination_wrap" + i,
+                                        isNoAjax: true,
+                                        pageChangeDeal: function(pageData){
+                                            
+                                            var index = pageData.pageNum, pageSize = pageData.pageSize;
+                                            var data = item.slice((index - 1) * pageSize, index * pageSize), itemD = {};
+                                            itemD.$lg = $.dataLanguage();
+                                            itemD.$searchData = globalData.initValue.searchData;
+                                            itemD.$tBodyData = data;
+                                            itemD.$thData = thData;
+                                            $('#search_var_tbody' + i).html(template('commonSearchDetail_var_tbodyW', itemD));
+                                        },
+                                        success: function(res){                            
+                                            // var thData, tBodyData, itemD = data;
+                                            // thData = itemD.data.chineseColumNameList[i];
+                                            // tBodyData = item;
+                                            // itemD.$lg = $.dataLanguage();
+                                            // itemD.$searchData = globalData.initValue.searchData;
+                                            // itemD.$thData = thData;
+                                            // itemD.$tBodyData = tBodyData;
+                                            // itemD.$noClick = false;
+                                            // globalData.initValue.totalData = data.data.resultList;
+                                            //     //生成表头
+                                            // $('#search_var_thead' + i).html(template('commonSearchDetail_var_theadW', itemD));
+                                            // $('#search_var_tbody' + i).html(template('commonSearchDetail_var_tbodyW', itemD));
+                                        }
+                                    });
+                                })
+                               
+                            }
+
+                        }else{
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+        },
+        getDtvCodeItem: function(dtvCode){
+            var result = '';
+            globalData.initValue.listData.forEach(function(item){
+                if(item.dtvCode == dtvCode){
+                    result = item;
+                }
+            })
+
+            return result;
+        },
+        init: function(){
+            this.getDtvCode();
+            $('#main').prepend(template('suspicious_commonSearchDetail', $.dataLanguage()));
+
+            $(".search-sub-title-txt").hide();
+            $.zCompositeData(common_params['suspicious']['status'],'#searchData [name = "dtvValidFlg"]',true);
+        }
+    
+      
+    };
+
+    $(document).ready(function(){
+        globalData.init();
+    })
+</script>

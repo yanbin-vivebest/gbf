@@ -1,0 +1,238 @@
+<!--尽职调查-->
+
+<script id="suspicious_examination" type="text/html">
+    <div id="suspicious" class="suspicious">
+        <!--初筛交易列表-->
+        <div class="panel panel-lined mb30">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{transList}}</div>
+            <div class="panel-body" id="searchData">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">{{beginDate}}</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control field" id="beginDate" placeholder={{beginDate}} name="beginDate" value=""/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">{{endDate}}</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control field" id="endDate" name="endDate" placeholder="{{endDate}}" value=""/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">{{status}}</label>
+                        <div class="col-md-8">
+                            <select name="report" class="form-control field" id="transListStatus">
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <div style="width:185px;">
+                                <span id="searchBtn" class="btn btn-primary pull-left fa fa-search">{{search}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped zCheckBox">
+                    <thead class="thead">
+                    <tr>
+                        <th>{{findDate}}</th>
+                        <th>{{susNum}}</th>
+                        <th>{{customerName}}</th>
+                        <th>{{customerNum}}</th>
+                        <th>{{customerType}}</th>
+                        <th>{{affiliate}}</th>
+                        <th>{{doubtfulDegree}}</th>
+                        <th>{{transactionTimes}}</th>
+                        <th>{{opponentNum}}</th>
+                        <th>{{listStatus}}</th>
+                        <th>{{majorCase}}</th>
+                        <th>{{operation}}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="suspicious_transviewTbody">
+                    <tr>
+                        <td colspan="20" style="text-align: center;">{{loading}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <!-- #end data table -->
+                <!-- 分页 -->
+                <div class="page">
+                    <div class="pager_container" id="Pagination">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 模板引擎动态生成表格数据 -->
+<script id="suspicious_transviewTable" type="text/html">
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td>{{value.sdate}}</td>
+        <td>{{value.susNum}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custType}}</td>
+        <td>{{value.bankName}}</td>
+        <td>{{value.susRate}}</td>
+        <td>{{value.trxCount}}</td>
+        <td>{{value.trxOppCount}}</td>
+        <td>{{value.isReport | getParamsStatus :'suspiciousTransList'}}</td>
+        <td>{{value.isSerious | getParamsStatus :'isStatus'}}</td>
+        <td style="min-width: 100px;">
+            <span class="btn btn-sm btn-warning detailBtn fa fa-edit hoverBtn" name='详情' btnType='list' onclick="globalData.listBtnFn('{{value.custId}}')"></span>
+        </td>
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="17" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<script>
+
+    var globalData = {
+        initValue: {
+
+        },
+        // 全局请求参数
+        data:{
+            pageNum: 1,
+            pageSize: 10
+        },
+        host: function(){
+            var url = '',
+                common = project.suspicious_project;
+
+            url += common.ip + ':' +common.port + common.projectName;
+
+            return url;
+        },
+
+        init: function(){
+
+            var startLayDate, endLayDate;
+
+            $('#main').prepend(template('suspicious_examination',$.dataLanguage()));
+
+
+            $.zCompositeData(common_params['rbac']['suspiciousTransList'],'#searchData [name = "report"]',false);
+
+            // 调用日期插件
+            startLayDate = laydate.render({
+                elem: '#beginDate',
+                lang:$.getLayDateLang(),
+                done: function(value, date, endDate){
+                    endLayDate.config.min = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+            endLayDate = laydate.render({
+                elem: '#endDate',
+                lang:$.getLayDateLang(),
+                done: function(value, date, endDate){
+                    startLayDate.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+            this.getData();
+            //事件
+            this.event();
+
+        },
+
+        //獲取交易列表表格數據
+        getData: function(pageData){
+            var url = this.host() + '/v1/screenLists';
+
+            pageData = pageData || globalData.data;
+
+            $.zAjax({
+                // url: project.host() + '/aml-app/v1/screenLists' ,
+                url: url,
+                headers: project.suspicious_project.header,
+                data: pageData,
+                isString: false,
+                success: function(data){
+                    var total = data.pageInfo && data.pageInfo.total;
+                    globalData.initValue.transListData = data;
+                    $.zPageMethod({
+                        headers: project.suspicious_project.header,
+                        page:'#Pagination',
+                        url: url ,
+                        tp:'suspicious_transviewTable',
+                        ele:'#suspicious_transviewTbody',
+                        total:total,
+                        data:pageData,
+                        list:data,
+                        success: function(data){
+                            globalData.initValue.transListData = data;
+                        }
+                    });
+                }
+            });
+
+        },
+
+        //查看按钮事件
+
+        listBtnFn: function(custId){
+            var postData,
+                item = '',
+                listData = globalData.initValue.transListData.list,
+                postObj = {},
+                url = '';
+
+            for(var i = 0; i < listData.length ; i++){
+                if(listData[i].custId == custId){
+                    postObj = listData[i];
+                    break;
+                }
+            }
+
+            url = $.builderUrl('#/suspicious/examination/approval', postObj);
+
+            //跳转
+            layer.closeAll();
+            window.location.hash = url;
+
+        },
+        event: function(){
+            //搜索按鈕事件
+            $("#searchBtn").click(function(){
+                var data=$.zSearchFn({},'#searchData .field');
+
+                data = $.extend(globalData.data, data);//合并页面数据
+                globalData.getData(data);
+            });
+
+        }
+
+    };
+
+    $(document).ready(function(){
+        globalData.init();
+    })
+</script>

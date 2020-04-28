@@ -1,0 +1,1989 @@
+<!--初筛交易查看--查看数据结果-->
+<style type="text/css">
+.suspicious-features{
+    display:inline-block;
+    width:70%;
+    word-wrap:keep-all;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+} 
+.of-h{
+    overflow:hidden;
+}
+.suspicious_titleH{
+    padding: 5px 0px 5px 20px;
+}
+.suspicious_checkBoxF[disabled = 'true'],
+.suspicious_checkBoxF[disabled = 'true'] span{
+    cursor: not-allowed !important;
+}
+.suspicious_pages textarea{
+    border: 1px solid #C0C0C0;
+}
+.suspicious_pages textarea:link
+.suspicious_pages textarea:hover,
+.suspicious_pages textarea:active,
+.suspicious_pages textarea:focus{
+    border: 1px solid #38b4ee;
+    transition: all .3s;
+}
+textarea{
+    min-height: 80px;
+    padding-bottom: 15px!important;
+}
+.relative{
+    position: relative;
+}
+.textarealen{
+    font-size: 10px;
+    position: absolute;
+    right: 18px;
+    bottom: 0px;  
+    transform: scale(.8);
+    -ms-transform: scale(.8);  /* IE 9 */
+    -webkit-transform: scale(.8);  /* Safari 和 Chrome */
+    -o-transform: scale(.8);   /* Opera */
+    -moz-transform: scale(.8); /* Firefox */
+    color: #000;
+}
+.textarealen:after{
+    content: "\/500";
+    font-size: 10px;
+    color: #000;
+}
+
+.hyphen{
+    display: flex;
+    width: 100px;
+    height: 24px;
+    font-family: Gotham;
+    font-size: 24px;
+    align-items: flex-start;
+    align-content: center;
+    flex:auto;
+}
+
+.suspicious_titleH,
+#chainNote_wrap,
+#socialNote_wrap,
+#otherNote_wrap{
+    display: none;
+}
+
+#navSuspicios.add{
+    position: fixed;
+    z-index: 100;
+    top: 109px;
+    left: 246px;
+    right:25px;
+    box-shadow: 1px 1px 50px rgba(0, 0, 0, .3);
+    background: #fff;
+}
+
+.navSuspicios #searchDatal{
+    display: none
+}
+
+.navSuspicios .textDn{
+    display: none;
+}
+
+/* 当表格内容超出表格容器时，出现滚动条 */
+.table-container{
+    overflow-y: scroll;
+}
+/* 控制表格表头下的th，不进行换行 */
+.table-container table thead tr th{
+    white-space: nowrap;
+}
+
+</style>
+
+<script type="text/html" id="suspicious_resultShow">
+    <div class="suspicious_pages">
+        <!-- 查看结果 -->
+        <div class="panel panel-lined" id="navSuspicios">
+            <div class="panel-header panel-header-suspicious" style="overflow: hidden;">
+                <i class="fa fa-user"></i>
+                <span>{{ result }}</span>
+                <!-- 返回按钮 -->
+                <span class="pull-right" onclick="globalData.backPage()">
+                    <a href="javascript:;">{{back}}</a>
+                </span>
+            </div>
+            <div class="panel-body" id="suspicious_resultShow_resultW"></div>
+        </div>
+        <!-- 模型可疑特征分析 -->
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious">
+                <i class="fa fa-user"></i>
+                {{feature}}
+            </div>
+            <!-- 可疑特征 -->
+            <div class="panel-body" id="suspicious_resultShow_featureW"></div>
+            <!-- 这个表，页面也不相关显示效果，我也不知道是干嘛的 -->
+			<table class="table table-border suspicious_result_consAy">
+				<thead><tr><th>{{contentNote}}</th></tr></thead>
+				<tbody id="otherNote2"></tbody>
+				<tr><th>{{Header}}</th></tr>
+				<tr><td>{{Data}}</td></tr>
+			</table>
+        </div>
+        <!-- 未知 -->
+		<div class="panel panel-lined dn">
+		    <div class="panel-header panel-header-suspicious">
+				<i class="fa fa-user"></i>
+				{{additionalAnalysis}}
+			</div>
+		    <div class="panel-body" style="position: relative;"></div>
+        </div>
+        <!-- 交易网络（标题+表单+开始结束日期） -->
+        <div class="panel panel-lined">
+            <!-- 标题 -->
+            <div class="panel-header panel-header-suspicious">
+				<i class="fa fa-user"></i>
+				{{tradingNet}}
+			</div>
+			<!-- 表单 -->
+			<div class="panel-body" id="searchData">
+                <!-- 时间跨度 -->
+				<div class="col-md-5">
+					<div class="form-group">
+						<label class="col-md-4 control-label required">{{timeSpace}}</label>
+						<div class="col-md-8">
+							<select name="status" class="form-control field" id="suspicious_time_show"></select>
+						</div>
+					</div>
+                </div>
+                <!-- 开始日期 和 结束日期 -->
+				<div class="col-md-7">
+					<div class="col-md-5">
+						<input type="text" class="form-control field" id="showBeginDate" disabled="true" name="beginDate" placeholder="{{beginDate}}" value="">
+					</div>
+					<div class="col-md-1">
+						<p class="hyphen" style="display: inlin-block;">~</p>
+					</div>
+					<div class="col-md-5">
+						<input type="text" class="form-control field" id="showEndDate" disabled="true" name="endDate" placeholder="{{endDate}}" value="">
+					</div>
+				</div>
+			</div>
+			<!-- 客户交易关系图 -->
+            <div class="panel-body" style="position: relative;">
+                <!-- Echarts图 -->
+                <div id="suspicious_resultShow_tradingNetW" class="suspicious_result_echarts"></div>
+                <!-- 右侧按钮（交易链分析+社交网络分析） -->
+                <div id="suspicious_resultShow_OperationW" class="col-md-4 suspicious_resultShow_Operation"></div>
+            </div>
+        </div>
+        <!-- 客户交易 -->
+        <div class="panel panel-lined">
+            <!-- 标题 -->
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{customerTrading}}</div>
+			<!-- 表单（开始截止日期+搜索/重置按钮+导出按钮） -->
+			<div class="panel-body" id="searchData">
+                <!-- 开始日期 -->
+				<div class="col-md-4">
+					<div class="form-group">
+						<label class="col-md-4 control-label">{{beginDate}}</label>
+						<div class="col-md-8">
+							<input type="text" class="form-control field" id="beginDate" disabled="true" name="v" placeholder="{{beginDate}}" value="">
+						</div>
+					</div>
+                </div>
+                <!-- 截止日期 -->
+				<div class="col-md-4">
+					<div class="form-group">
+						<label class="col-md-4 control-label">{{endDate}}</label>
+						<div class="col-md-8">
+							<input type="text" class="form-control field" id="endDate" disabled="true" name="v" placeholder="{{endDate}}" value="">
+						</div>
+					</div>
+				</div>
+				<!-- 搜索/重置按钮 -->
+				<div class="col-md-3">
+					<div class="form-group">
+						<label class="col-md-12">
+							<div>
+								<span id="searchBtn" class="btn btn-primary fa fa-search">{{search}}</span>
+								<span id="resetBtn" class="btn btn-primary fa fa-refresh">{{reset}}</span>
+							</div>
+						</label>
+					</div>
+				</div>
+				<!-- 智能检测结果-客户交易 数据导出 -->
+				<div class="col-md-1">
+					<div style="width: 100px;">
+						<span id="downBtn" class="btn btn-success mg-lr-5px">{{ transReport }}</span>
+					</div>
+				</div>
+			</div>
+			<!-- 客户交易查询结果 -->
+            <div class="panel-body of-h" id="suspicious_result_tradeBox">
+                <!-- 表格容器 -->
+                <div class="table-container">
+                    <!-- 表格 -->
+                    <table class="table table-bordered table-striped zCheckBox">
+                        <thead>
+                            <tr>
+                                <th>{{transactionDate}}</th>
+                                <th>{{transactionTime}}</th>
+                                <th>{{customerN}}</th>
+                                <th>{{customerNm}}</th>
+                                <th>{{eacNo}}</th>
+                                <th>{{mainEacNo}}</th>
+                                <th>{{transactionAmount}}</th>
+                                <th>{{transactionUsaAmount}}</th>
+                                <th>{{balance}}</th>
+                                <th>{{ccy}}</th>
+                                <th>{{opponentCustomerNum}}</th>
+                                <th>{{opponentCustomerName}}</th>
+                                <th>{{oppCardNo}}</th>
+                                <th>{{oppEacNo}}</th>
+                                <th>{{oppMainEacNo}}</th>
+                                <th>{{oppOrgName}}</th>
+                                <th>{{oppOrgNo}}</th>
+                                <th>{{tellerNo}}</th>
+                                <th>{{tranCode}}</th>
+                                <th>{{abstracts}}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suspicious_result_tradeW"></tbody>
+                    </table>
+                </div>
+                <!-- 分页按钮组 -->
+                <div class="page">
+                    <div class="pager_container" id="Pagination"></div>
+                </div>
+            </div>
+        </div>
+        <!-- 结论分析 -->
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{conclusionAnalysis}}</div>
+                <div class="panel-body">
+                    <!-- 交易链分析意见 -->
+                    <h4 class="suspicious_titleH">{{transactionChainAd}}</h4>
+                    <div id="chainNote_wrap" class="of-h">
+                        <table class="table table-bordered suspicious_result_consAy">
+                            <thead>
+                                <tr>
+                                    <th>{{time}}</th>
+                                    <th>{{createUser}}</th>
+                                    <!-- <th>{{creteOperte}}</th> -->
+                                    <th>{{contentNote}}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chainNote">
+                                
+                            </tbody>
+                        </table>
+                        <div class="page">
+                            <div class="pager_container" id="pagination1" data-getData="getConAyData" data-pagination="pagination1">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 社交网络分析意见 -->
+                    <h4 class="suspicious_titleH">{{socialNetAd}}</h4>
+                    <div id="socialNote_wrap" class="of-h">
+                        <table class="table table-bordered suspicious_result_consAy">
+                            <thead>
+                                <tr>
+                                    <th>{{time}}</th>
+                                    <th>{{createUser}}</th>
+                                    <!-- <th>{{creteOperte}}</th> -->
+                                    <th>{{contentNote}}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="socialNote">
+                                
+                            </tbody>
+                        </table>
+                        <div class="page">
+                            <div class="pager_container" id="pagination2" data-getData="getConAyData" data-pagination="pagination2">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 分析结论信息 -->
+                    <h4 class="suspicious_titleH">{{additionalAnalysis2}}</h4>
+                    <div id="otherNote_wrap" class="of-h">
+                        <table class="table table-bordered suspicious_result_consAy">
+                            <thead>
+                                <tr>
+                                    <th>{{time}}</th>
+                                    <th>{{createUser}}</th>
+                                    <!-- <th>{{creteOperte}}</th> -->
+                                    <th>{{contentNote}}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="otherNote">
+                                
+                            </tbody>
+                        </table>
+                        <div class="page">
+                            <div class="pager_container" id="pagination3" data-getData="getConAyData" data-pagination="pagination3">
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- 总体认定意见 -->
+                    <table class="table table-bordered suspicious_result_consAy">
+                        <tr>
+                            <!-- 左侧（总体认定意见） -->
+                            <td>
+                                {{if $btnType == 'investigation'}}
+                                    {{jdAd}}
+                                {{else}}
+                                    {{totalVerAd}}
+                                {{/if}}
+                            </td>
+                            <!-- 右侧（总体认定意见输入区） -->
+                            <td style="padding:0;" class="relative">
+                                <textarea name="" id="summaryNote" cols="30" rows="3"  maxlength="500"></textarea>
+                                <!-- 输入字数 -->
+                                <!-- <i class="textarealen">0</i> -->
+                            </td>
+                        </tr>
+                    </table>
+                    {{if !isCanUseState}}
+                    <!-- 按钮组（生成可疑报告、生成不可疑报告、可疑、不可疑、保存） -->
+                        <div id="suspicious_result_btnsW" class="col-md-12 center" style="padding-top:15px;padding-bottom:10px;background: #fff;"></div>
+                        <!-- 未知 -->
+						<div id="suspicious_result_btnsW_nothing" class="col-md-2 center" style="padding-top: 15px;padding-bottom: 10px;background: #fff;"></div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="suspicious_result_page">
+    {{if pageN == 1}}
+        <span class="btn btn-default" style="color:#C0C0C0" onclick="globalData.paginatFn('{{str}}', 0, 1, '{{ele}}')">{{beforP}}</span>
+    {{else}}
+        <span class="btn btn-default" onclick="globalData.paginatFn('{{str}}', 0, 1, '{{ele}}')">{{beforP}}</span>
+    {{/if}}
+    
+    {{if pageTotal == pageN}}
+        <span class="btn btn-default" style="color:#C0C0C0" onclick="globalData.paginatFn('{{str}}', 1, 1, '{{ele}}')">{{nextP}}</span>
+    {{else}}
+        <span class="btn btn-default" onclick="globalData.paginatFn('{{str}}', 1, 1, '{{ele}}')">{{nextP}}</span>
+    {{/if}}
+    
+</script>
+
+<!--查看结果-->
+<script type="text/html" id="suspicious_resultShow_result">
+    <div>
+        <div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.findDate}}: {{sdate || null}}</div>
+        <div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.customerNum}}: {{custId || null}}
+        </div>
+        <div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.customerName}}: {{custNm || null}}
+        </div>
+		
+		<div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">
+			{{dataLanguage&&dataLanguage.cardId}}:{{cardId||null}}
+		</div>
+		<div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">
+			{{dataLanguage&&dataLanguage.kyc}}:{{kyc||null}}
+		</div>
+		<div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">
+			可疑度：{{susRate||null}}
+		</div>
+		<div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">
+			操作人：{{operatorName||null}}
+		</div>
+		<div class="col-lg-3 col-md-4 pd-1rem col-sm-4 col-xs-6">
+			{{dataLanguage&&dataLanguage.bankName}}:{{orgName||null}}
+		</div>
+	
+    </div>
+</script>
+
+<!--客户交易图按钮-->
+<script type="text/html" id="suspicious_resultShow_Operation">
+    <span id="searchBtn1" class="btn btn-primary pull-left col-md-12" onclick="globalData.traChainAnalysisFn()">{{tradingChainAnalysis}}</span>
+    <span id="searchBtn2" class="btn btn-primary pull-left col-md-12" onclick="globalData.socialNetAnaFn()">{{socialNetAnalysis}}</span>
+    <!-- <span id="searchBtn3" class="btn btn-primary pull-left col-md-12" onclick="globalData.reviewProcessFn()">{{reviewProcess}}</span> -->
+    <!-- <span id="searchBtn4" class="btn btn-primary pull-left col-md-12" onclick="globalData.distributeTaskFn()">{{distributeTask}}</span> -->
+	 
+     {{if state == 2}}
+     {{else}}
+	 <span id="searchBtn5" class="btn btn-primary pull-left col-md-12 dn" onclick="globalData.previewReportFn(1)">可疑报告预览</span>
+	 <span id="searchBtn7" class="btn btn-primary pull-left col-md-12 dn" onclick="globalData.previewReportFn(0)">不可疑报告预览</span>
+    <!-- <span id="searchBtn6" class="btn btn-primary pull-left col-md-12" onclick="globalData.downloadReportFn()">{{downloadReport}}</span> -->
+     {{/if}}
+    
+</script>
+
+<!--客戶交易 查询结果 模板-->
+<script type="text/html" id="suspicious_result_trade">
+
+    {{if list && list.length > 0 }}
+        {{each list as value i}}
+            <tr>
+                <td>{{value.trxDt}}</td>
+                <td>{{value.trxTm}}</td>
+                <td>{{value.custId}}</td>
+                <td>{{value.custNm}}</td>
+                <td>{{value.eacId}}</td>
+                <td>{{value.mainEacId}}</td>
+                <td>{{value.trxAmt}}</td>
+                <td>{{value.usdAmt}}</td>
+                <td>{{value.onlBal}}</td>
+                <td>{{value.ccyCd}}</td>
+                <td>{{value.oppCustId}}</td>
+                <td>{{value.oppCustNm}}</td>
+                <td>{{value.oppCardNo}}</td>
+                <td>{{value.oppEacId}}</td>
+                <td>{{value.oppMainEacId}}</td>
+                <td>{{value.oppOrgNm}}</td>
+                <td>{{value.oppOrgNo}}</td>
+                <td>{{value.tellerNo}}</td>
+                <td>{{value.tellCode}}</td>
+                <td>{{value.sabstract }}</td>
+            </tr>
+        {{/each}}
+    {{else}}
+        <tr>
+            <td colspan="15" style="text-align: left;">{{1 | noData}}</td>
+        </tr>
+    {{/if}}
+
+</script>
+
+<!--结论分析-->
+<script type="text/html" id="suspicious_result_conAy">
+    {{if list && list.length > 0}}
+        {{each list as value i}}
+        <tr>
+            <td>{{value.createTime | timeFormat}}</td>
+            <td>{{value.name}}</td>
+            <!-- <td>{{value.operator}}</td> -->
+            <td style="word-break: break-all;">{{value.content}}</td>
+        </tr>
+        {{/each}}
+
+    {{else}}
+        <tr>
+            <td colspan="4" style="text-align: left;">{{1 | noData}}</td>
+        </tr>
+    {{/if}}
+</script>
+
+<!--附加分析信息-->
+<script type="text/html" id="suspicious_resultShow_ohterNote2">
+    {{if data && data.length > 0}}
+        {{each data as value i}}
+        <tr>
+            {{if value.casesummary}}
+            <td style="word-break: break-all;">{{value.casesummary || '-'}}</td>
+            {{else}}
+            <td colspan="1" style="text-align: center;">{{1 | noData}}</td>
+            {{/if}}
+        </tr>
+        {{/each}}
+
+    {{else}}
+        <tr>
+            <td colspan="1" style="text-align: center;">{{1 | noData}}</td>
+        </tr>
+    {{/if}}
+</script>
+
+<!--可疑特征-->
+<script type="text/html" id="suspicious_resultShow_feature">
+    <ul>
+        {{each data as value i}}
+        <li class="col-lg-3 col-md-4 col-xs-6 mg-tb-5 suspicious_checkBoxF" disabled="true" title="{{value.name}}">
+            {{if value.checked}}
+            <span class="zCheck zCBox zC-sm"></span><b class="suspicious-features">{{value.name}}</b>
+            {{else}}
+            <span class="zCBox zC-sm"></span> <span class="suspicious-features">{{value.name}}</span>
+            {{/if}}
+        </li>
+        {{/each}}
+    </ul>
+</script>
+
+<!-- 同意弹窗 -->
+<script id="suspicious_transviewWrap" type="text/html">
+    <div class="suspicious_transviewBox">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{post}}： </label>
+                <div class="col-md-8">
+                    <select name="status" class="form-control field" id="suspicious_role1">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class=" col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{stuff}}： </label>
+                <div class="col-md-8">
+                    <!--<input  maxlength="30" type="text" class="form-control field fieldReadOnly" name="auditor" placeholder="{{11}} " value=""/>-->
+                    <select name="auditor" class="form-control field" id="suspicious_auditor">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label">{{matter}}： </label>
+                <div class="col-md-8 relative">
+                    <textarea class="form-control field fieldReadOnly" name="content" id="suspicious_matter" maxlength="500"></textarea>
+                    <i class="textarealen"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script>
+    var globalData = {
+        initValue: {
+            // tsUrl: 'http://192.168.15.22:8890/aml-app',
+            id: '',
+            distributionTask: {
+                zh_cn: '任务派发', en_us: 'Distribution Task',zh_cht:'任務派發',
+            },
+            tradingNetTitle: {
+                zh_cn: '客户交易关系图', en_us: 'Customer Transaction Diagram', zh_cht: '客戶交易關係圖',
+            },
+            saveTips: {
+                zh_cn: '操作成功！', en_us: 'Success!', zh_cht: '操作成功！',
+            },
+            person: {
+                zh_cn: '人物', en_us: 'Person', zh_cht: '人物',
+            },
+            family: {
+                zh_cn: '家人', en_us: 'Family', zh_cht: '家人',
+            },
+            friend: {
+                zh_cn: '朋友', en_us: 'Friends', zh_cht: '朋友',
+            },
+            customerNum: {
+                zh_cn: '客户编号', en_us: 'Customer Number', zh_cht: '客戶編號',
+            },
+            close: {
+                zh_cn: '折叠', en_us: 'Fold', zh_cht: '摺叠',
+            },
+            open:{
+                zh_cn: '展开', en_us: 'Open', zh_cht: '展開',
+            },
+            majorSus:{
+                zh_cn: '重大可疑', en_us: 'Major Suspicious', zh_cht: '重大可疑',
+            },
+            follow: {
+                zh_cn:'关注', en_us: 'Follow', zh_cht: '關注',
+            },
+            notSus: {
+                zh_cn:'不可疑', en_us: 'Not Suspicious', zh_cht: '不可疑',
+            },
+            staging: {
+                zh_cn:'保存', en_us: 'Staging', zh_cht: '保存',
+            },
+            agree:{
+                zh_cn: '可疑', en_us: 'Suspicious', zh_cht: '可疑',
+            },
+            regression: {
+                zh_cn: '回退', en_us: 'Regression', zh_cht: '回退',
+            },
+            regressionTips: {
+                zh_cn: '确认回退么？', en_us: 'Are you sure regression?', zh_cht: '確認回退么？'
+            },
+            contentTips:{
+                zh_cn: '请先输入$n$。', en_us: 'Please input $n$.', zh_cht: '請先輸入$n$。'
+            },
+			tranReport:{
+			    zh_cn: '交易数据导出', en_us: 'Please input $n$.', zh_cht: '交易数据导出'
+			},
+			reset:{
+			    zh_cn: '案例重置', en_us: 'Please input $n$.', zh_cht: '案例重置'
+			}
+
+        },
+        // 全局请求参数
+        data: {
+            pageNum: 1,
+            pageSize: 10
+        },
+        pagination1: {
+            pageNum: 1,
+            pageSize: 5,
+        },
+        pagination2: {
+            pageNum: 1,
+            pageSize: 5,
+        },
+        pagination3: {
+            pageNum: 1,
+            pageSize: 5,
+        },
+        host: function (params) {
+
+            return project.host(params);
+        },
+        getDataValue: function (key) {
+            if (!key) {
+                return '';
+            }
+            return this.initValue[key][lang.getLang()];
+        },
+        getResultId: function () {
+            //获取字段为  SUS_RESULT
+            var getObj = $.getUrlParams();
+            var custId = getObj && getObj.custId || '';
+            router = getObj && getObj.$router || '';
+            //进入的页面的相关判定
+            globalData.fromPageData = {
+                btnType: getObj.$btnType,
+                notuse: getObj.$notuse,
+            };
+            globalData.initValue.pageData = getObj;
+            globalData.initValue.custId = getObj && getObj.custId;
+			
+            
+        },
+        dealStr: function(data){
+            if(data.length < 5){
+                return data;
+            }
+
+            var cl = 3, times, newArr = '';
+            if(data.length <= 9){
+                cl = 2
+            }
+
+            times = Math.floor(data.length/cl),
+            newArr = '';
+                
+            for(var i =0; i < (cl ); i++){
+                if(i == cl-1){
+                    newArr += data.substr(times*i);
+                }else{
+                    newArr += data.substr(times*i, times) + '\n';
+                }
+                
+            }
+            return newArr;
+
+        },
+
+        contentTipFn: function(ele){
+            var eleD = $(ele),
+                eleVal = $.trim(eleD.val()),
+                eleTip = eleD.closest('td').siblings('td').eq('0').html();
+
+                if(!eleVal){
+                    // layer.msg(globalData.getDataValue('contentTips').replace('$n$', eleTip));
+
+                    layer.tips(globalData.getDataValue('contentTips').replace('$n$', eleTip),eleD,{ tips: [1, common_params['rbac'].color.error] });
+                    eleD.focus();
+                }
+
+        },
+        renderBtnList: function(){
+
+            var data =  $.dataLanguage();
+            data.state = globalData.showBtnStatus;
+            $('#suspicious_resultShow_OperationW').prepend(template('suspicious_resultShow_Operation',data));
+        },
+
+        //根据 fromPageData 初始化页面相关
+        initPageData: function(){
+            var fromPageData = globalData.fromPageData,
+
+                btnDatas = [];
+
+            var btnTotalDatas = {
+                'zd': {
+                        name: '重大可疑',
+                        btn: function(i){
+                            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.majorSus('+i+')" class="btn btn-danger mg-lr-5px">'+globalData.getDataValue('majorSus')+'</span>')
+                        }
+                    },
+                'gz': {
+                        name: '关注',
+                        btn: function(){
+                            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.follow()" class="btn btn-primary mg-lr-5px">'+globalData.getDataValue('follow')+'</span>')
+                        }
+                    },
+                'bky': {
+                        name: '不可疑',
+                        btn: function(){
+                            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.notSus()" class="btn btn-success mg-lr-5px">'+globalData.getDataValue('notSus')+'</span>')
+                        }
+                    },
+				'bkyup': {
+					name: '生成不可疑报告',
+					btn: function(){
+						return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.bkyup()" class="btn btn-success mg-lr-5px">生成不可疑报告</span>')
+					}
+				},
+                'zc':{
+                        name: '保存',
+                        btn: function(){
+                            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.staging()" class="btn btn-info mg-lr-5px">'+globalData.getDataValue('staging')+'</span>')
+                        }
+                    },
+                'ty':{
+                        name: '可疑',
+                        btn: function(){
+                            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.agree()" class="btn btn-success mg-lr-5px">'+globalData.getDataValue('agree')+'</span>')
+                        }
+                    },
+				'tybg':{
+				        name: '生成可疑报告',
+				        btn: function(){
+				            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.tybg()" class="btn btn-success mg-lr-5px">生成可疑报告</span>')
+				        }
+				    },
+                'ht':{
+                        name: '回退',
+                        btn: function(){
+                            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.regression()" class="btn btn-danger mg-lr-5px">生成可疑报告</span>')
+                        }
+                    },
+				'cz':{
+				        name: '案例重置',
+				        btn: function(){
+				            return ('<span id="noteSaveBtn" onclick="globalData.operationBtn.reset()" class="btn btn-danger mg-lr-5px">'+globalData.getDataValue('reset')+'</span>')
+				        }
+				    }
+            };
+			// 搜索按钮点击事件
+			$('#searchBtn').on('click', function() {
+				var data = $.zSearchFn(globalData.data, '#searchData .field')
+				globalData.getData(data)
+			})
+			
+			// 重置按钮点击事件
+			$('#resetBtn').click(function() {
+				var data = $.zResetFn(globalData.data, '#searchData .field')
+				globalData.getData(data)
+			})
+			
+            // 智能检测结果-客户交易-数据导出按钮点击事件
+			$('#downBtn').on('click', function() {
+				var str = '',
+					url = "/v1/transTotals/excelsTransInfo";
+				var data = $.zSearchFn(globalData.data, '#searchData .field'),
+					userData = JSON.parse(sessionStorage.getItem('data')).user;
+				str = globalData.host() + url + '?beginDate=' + data.beginDate + '&endDate=' + data.endDate + '&timeSpan=' +
+					globalData.initValue.pageData.$timeSpan + '&dateTime=' + globalData.initValue.pageData.sdate + '&custId=' +
+					globalData.initValue.custId;
+					
+				var req = new XMLHttpRequest()
+				
+				var index =layer.load(3,{shade:.1})
+				req.open('GET',str,true);
+				
+				req.onprogress = function(e){
+					if(e.target.status==200){
+						layer.close(index)
+					}
+				}
+				
+				req.responseType='blob'
+				req.setRequestHeader('Content-Type','application/json')
+				req.onload = function () {
+                    var data = req.response
+                    var blob = new Blob([data])
+                    var blobUrl = window.URL.createObjectURL(blob)  // 生成blobUrl
+                    var b = document.createElement('a')
+                    b.download = '智能检测结果导出.xls'
+                    b.href = blobUrl
+                    b.click()
+                    window.URL.revokeObjectURL(blobUrl) // 清除blobUrl
+                }
+				req.send('')
+				setTimeout(function(){
+					layer.close(index)
+				},20000)
+			
+			});
+			
+			
+            switch (fromPageData.btnType){
+                case 'verificationBtn':
+                //查证 -- 【重大可疑】，【关注】，【不可疑】，【暂存】
+                
+                var url = '/v1/distributeJournals/status';
+
+                $.zAjax({
+                    url: this.host() + url,
+                    type: 'post',
+                    isString: true,
+                    data: {
+                        screentId: globalData.initValue.pageData.outId
+                    },
+                    success: function(data){
+                        //重大可疑 关注是否存在
+                        if(data.data == 1){
+                            btnDatas.push(btnTotalDatas['zd'].btn(), btnTotalDatas['gz'].btn(), btnTotalDatas['bky'].btn(), btnTotalDatas['zc'].btn());
+                        }else{
+                            btnDatas.push(btnTotalDatas['tybg'].btn(),btnTotalDatas['bkyup'].btn(), btnTotalDatas['ty'].btn(), btnTotalDatas['bky'].btn(), btnTotalDatas['zc'].btn());
+                        }
+
+                        $('#suspicious_result_btnsW').html(btnDatas.join(''));
+                    }
+                })
+               
+                break;
+
+                case 'list':
+                //查看 -- 无操作权限
+                //
+                btnDatas = [];
+				btnDatas.push(btnTotalDatas['tybg'].btn(),btnTotalDatas['bkyup'].btn(), btnTotalDatas['zc'].btn(), btnTotalDatas['cz'].btn());
+
+                //没有操作权限
+                globalData.isCanUseState = true;
+                // $('#summaryNote').attr('readOnly', true).closest('table').hide();
+
+                break;
+                case 'investigation':
+                //尽调 --【同意】，【回退】，【暂存】
+                //
+                btnDatas.push(btnTotalDatas['ty'].btn(), btnTotalDatas['ht'].btn(), btnTotalDatas['zc'].btn());
+                
+                break;
+                case 'approval':
+                //审批 -- 【同意】，【回退】，【暂存】====》审定 -- 【重大可疑】，【回退】，【暂存】
+                //
+                btnDatas.push(btnTotalDatas['zd'].btn(), btnTotalDatas['ht'].btn(), btnTotalDatas['zc'].btn());
+                
+                break;
+                case 'auditing':
+                // 审核 -- 【同意】，【回退】，【暂存】====》复核 -- 【同意】，【不可疑】，【暂存】
+
+                btnDatas.push(btnTotalDatas['ty'].btn(), btnTotalDatas['bky'].btn(), btnTotalDatas['zc'].btn());
+                break;
+            }
+
+            $('#suspicious_result_btnsW').html(btnDatas.join(''));
+
+        },
+        operationBtn: {
+            // 下载可疑报告
+			tybg:function(){
+				var susType = "1"
+				feaSelection = globalData.getFeaSelection()
+				var timeSpan = globalData.initValue.pageData.$timeSpan || '1';
+				
+				var path = globalData.host(),
+					oid = globalData.initValue.pageData.outId,
+						reportFormat=1;
+				
+				var url = `${path}/v1/reportSelectitems/ReviewprocessPro?susType=1&screenId=${oid}&timeSpan=${timeSpan}`
+				var req = new XMLHttpRequest()
+				
+				var index = layer.load(3,{shade:.1})
+				req.open('GET',url,true)
+				
+				req.onprogress = function(e){
+					if(e.target.status==200){
+						layer.close(index)
+					}
+				}
+				
+				req.responseType = 'blob'
+				req.setRequestHeader('Content-Type','application/json')
+				req.onload = function () {
+                    var data = req.response
+                    var blob = new Blob([data])
+                    var blobUrl = window.URL.createObjectURL(blob)
+                    var tempElement = document.createElement('a')
+                    tempElement.style.display = 'none'
+                    tempElement.download = '可疑报告' + globalData.initValue.custId + '.docx'
+                    tempElement.href = blobUrl
+                    tempElement.click()
+                    tempElement = null
+                }
+				req.send('')
+				setTimeout(function(){
+					layer.close(index)
+				})
+			},
+			
+            // 下载不可疑报告
+			bkyup:function(){
+				var susType = "1"
+				feaSelection = globalData.getFeaSelection()
+				var timeSpan = globalData.initValue.pageData.$timeSpan || '1';
+				
+				var path = globalData.host(),
+					oid = globalData.initValue.pageData.outId,
+						reportFormat=1;
+				
+				var url = `${path}/v1/reportSelectitems/ReviewprocessPro?susType=0&screenId=${oid}&timeSpan=${timeSpan}`
+				var req = new XMLHttpRequest()
+				
+				var index = layer.load(3,{shade:.1})
+				req.open('GET',url,true)
+				
+				req.onprogress = function(e){
+					if(e.target.status==200){
+						layer.close(index)
+					}
+				}
+				
+				req.responseType = 'blob'
+				req.setRequestHeader('Content-Type','application/json')
+				req.onload = function () {
+                    var data = req.response
+                    var blob = new Blob([data])
+                    var blobUrl = window.URL.createObjectURL(blob)
+                    var tempElement = document.createElement('a')
+                    tempElement.style.display = 'none'
+                    tempElement.download = '不可疑报告' + globalData.initValue.custId + '.docx'
+                    tempElement.href = blobUrl
+                    tempElement.click()
+                    tempElement = null
+                }
+				req.send('')
+				setTimeout(function(){
+					layer.close(index)
+				})
+			},
+			
+            judgeFn: function(status){
+                var url = '/v1/conclusionInfos/judge',
+                    user = JSON.parse(sessionStorage.getItem('data')).user;
+
+                var summayrNoteD = $("#summaryNote"),
+                    content = $.trim(summayrNoteD.val());
+
+                // 8：重大嫌疑 9：关注 10：不可疑 
+                var data = {
+                    screentId: globalData.initValue.pageData.outId,
+                    roleId: user.roledIds,
+                    status: status,
+                    content: content,
+                    userId: user.userId,
+                    name: JSON.parse(sessionStorage.getItem('data')).user.userName
+                };
+
+                /*if(!content){
+                    globalData.contentTipFn("#summaryNote");
+                    return;
+                }*/
+
+                $.zAjax({
+                    url: globalData.host() + url,
+                    type: 'post',
+                    data: data,
+                    isString: true,
+                    success: function(data){
+                        if(data.code == 0){
+                              layer.msg(globalData.getDataValue('saveTips'), {icon: 1});  
+                              // window.history.replaceState('', null, '#/suspicious/screening/automonitor');
+                              //   window.location.hash += '?';
+                              
+							  setTimeout(function(){
+								  location.hash='/suspicious/screening/automonitor'
+							  },500)
+							  
+                        }else{
+                            layer.msg(data.errMsg);
+                        }
+                    }
+                })
+
+            },
+
+            commitFn: function(operateType, commitData, fn){
+                var url = '/v1/conclusionInfos/commit',
+                    user = JSON.parse(sessionStorage.getItem('data')).user,
+                    data = {};
+
+                var content = $.trim($("#summaryNote").val());    
+
+                // 1 提交 2 回退
+               
+                data = {
+                    screentId: globalData.initValue.pageData.outId,
+                    roleId: commitData.roleId,
+                    operateType: operateType,
+                    content: content,
+                    userId: user.userId,
+                    preId: commitData.preId || globalData.initValue.pageData.jourId,
+                    name: JSON.parse(sessionStorage.getItem('data')).user.userName,
+                    remarks: commitData.content,
+                    
+                }
+
+                if(operateType != 2){
+                    data.userId2 = commitData.operator;
+                }
+
+                $.zAjax({
+                    url: globalData.host() + url,
+                    type: 'post',
+                    isString: true,
+                    data: data,
+                    success: function(data){
+                        if(data.code == 0){
+                            layer.closeAll();
+                            layer.msg(globalData.getDataValue('saveTips'), {icon: 1}); 
+                            if(fn){
+                                fn()
+                            }  
+                            window.history.go(-1);
+                        }
+                    }
+                })
+
+            },
+
+            //同意--无弹窗
+            commitFnNoW: function(operateType){
+                var url = '/v1/conclusionInfos/commit',
+                    user = JSON.parse(sessionStorage.getItem('data')).user;
+
+                var content = $.trim($("#summaryNote").val());    
+
+                var data = {
+                    screentId: globalData.initValue.pageData.outId,
+                    operateType: operateType,
+                    content: content,
+                    userId: user.userId,
+                    preId: globalData.initValue.pageData.jourId,
+                    name: JSON.parse(sessionStorage.getItem('data')).user.userName,
+                    
+                }
+
+
+                $.zAjax({
+                    url: globalData.host() + url,
+                    type: 'post',
+                    isString: true,
+                    data: data,
+                    success: function(data){
+                        if(data.code == 0){
+                            layer.closeAll();
+                            layer.msg(globalData.getDataValue('saveTips'), {icon: 1}); 
+                            window.history.go(-1)
+                        }
+                    }
+                })
+            },
+
+            commiteFn2: function(operateType){
+                var user = JSON.parse(sessionStorage.getItem('data')).user;
+                $('#dataView').html(template('suspicious_transviewWrap',$.dataLanguage()));
+                
+                //可派到 管护尽调岗位 管护尽调审核岗 反洗钱审核岗 aml-audit 反洗钱审批岗位 dd 综合岗
+                // var roleId = ['666101','666105', '666103', '666106'];
+                
+                var roleId = ['666101','666105', '666103', '666106'],
+                    currentRoleId = user.roleIds;
+
+                var items = globalData.initValue.pageData;
+
+                var title = globalData.getDataValue('distributionTask');
+
+                //尽调 --尽调审核
+                if(currentRoleId == '666105'){
+                    roleId = ['666107'];
+                }
+
+                //尽调审核 -- 经办
+                if(currentRoleId == '666107'){
+                    roleId = ['666102'];
+                }
+
+                //反洗钱审核-- 反洗钱审批
+                if(currentRoleId == '666101'){
+                    roleId = ['666104'];
+                }
+
+                //反洗钱审批 -- 经办
+                if(currentRoleId == '666104'){
+                    roleId = ['666102'];
+                }
+
+                //经办
+                if(currentRoleId == '666102'){
+                    roleId = ['666101'];
+                }
+
+                if(currentRoleId == '666106' || currentRoleId == '666103'){
+                    roleId = ['666102'];
+                }
+
+
+                $.zOpen({
+                    title: title,
+                    ele: "#dataView",
+                    callback: function(){
+						var formData={}
+                        // var formData=sessionStorage.getItem('NoTips')?$.zValidate1("#dataView"):$.zValidate("#dataView"), data = {};
+
+                         data = {
+                            content: formData.content,
+                            roleId: formData.status,
+                            operator: formData.auditor,
+                            screentId: items.outId,
+                            preId: items.jourId,
+                            name: JSON.parse(sessionStorage.getItem('data')).user.userName
+                        }; 
+
+                        // 验证通过
+                        if(formData){
+                            globalData.operationBtn.commitFn(operateType, data, function(){
+                                // window.history.go(-1)
+                            });
+                        }
+                    },
+                    close: function(){
+                        layer.closeAll();
+                    }
+                })
+
+                globalData.getPostData(roleId);
+            },
+
+            //重大可疑
+            majorSus: function(i){
+                this.judgeFn(8);
+            },
+            //关注
+            follow: function(){
+                this.judgeFn(9);
+            },
+            //不可疑
+            notSus: function(){
+                this.judgeFn(10);
+            },
+			//重置为未认领状态
+			reset: function(){
+			    this.judgeFn(0);
+			},
+            //暂存
+            staging: function () {
+                var val = $.trim($("#summaryNote").val()),
+                    url = '/v1/conclusionInfos/analysis',
+                    data = {};
+                var pageData = globalData.initValue.pageData;
+                if (!val) {
+                    globalData.contentTipFn("#summaryNote");
+                    return;
+                }
+                data = {
+                    screentId: pageData.outId,
+                    roleId: JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+
+                    notBookType: 3,
+                    content: val,
+                    userId: JSON.parse(sessionStorage.getItem('data')).user.userId,
+                    name: JSON.parse(sessionStorage.getItem('data')).user.userName,
+                };
+                if (globalData.noteId) {
+                    data.id = globalData.noteId
+                }
+                $.zAjax({
+                    url: globalData.host() + url,
+                    type: 'post',
+                    isString: true,
+                    data: data,
+                    success: function (data) {
+                        if (data.code == 0) {
+                            globalData.noteId = data.data;
+                            layer.msg(data.errMsg)
+                            // globalData.getConAyData('1', '#chainNote');
+                            // globalData.getConAyData('2', '#socialNote');
+                            globalData.getConAyData('3', '#otherNote');
+                        } else {
+                            layer.msg(data.errMsg)
+                        }
+
+                    }
+                })
+            },
+            //同意
+            agree: function(){
+
+				globalData.operationBtn.majorSus()
+				return
+				
+                var content = $.trim($('#summaryNote').val());
+
+                if(!content){
+                    globalData.contentTipFn("#summaryNote");
+                    return;
+                }
+                var roleIds = ['666107', '666106', '666103', '666104'],
+                    userRoleId = JSON.parse(sessionStorage.getItem('data')).user.roleIds;
+                if(roleIds.indexOf(userRoleId) >= 0){
+                    globalData.operationBtn.commitFnNoW(1);
+                    return;
+                }
+
+                globalData.operationBtn.commiteFn2(1);
+            },
+            //回退
+            regression: function(){
+                // globalData.operationBtn.commiteFn2(2);
+                var val = $("#summaryNote").val(), data = {};
+
+                if(!val){
+                    globalData.contentTipFn("#summaryNote");
+                    return;
+                }
+
+                data = {
+                    roleId: JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+                    content: val,
+                    preId: globalData.initValue.pageData.preId,
+                    name: JSON.parse(sessionStorage.getItem('data')).user.userName
+                }
+
+                globalData.operationBtn.commitFn(2, data, function(){
+                    // history.go(-1);
+                })
+            }
+
+        },
+
+         //获取岗位人员数据
+        getPostData: function(roleIds){
+            var url = '/v1/roles';
+
+            $.zAjax({
+                url: globalData.host('roles') + url,
+                success: function(data){
+                    if(data.code == 0){
+                        var arr = [];
+                        if(roleIds){
+                            // data.list.forEach( function(item){
+                            //     if(item.roleId != roleIds){
+                            //         arr.push(item);
+                            //     }
+                            // })
+                            // 
+                            data.list.forEach( function(item){
+                               if(typeof roleIds == 'string'){
+                                    if(item.roleId == roleIds){
+                                        arr.push(item);
+                                    }
+                               }else{
+                                    roleIds.forEach(function(i){
+                                        if(item.roleId == i){
+                                            arr.push(item);
+                                        }
+                                    })
+                               }
+                           })
+                                    
+                           
+                        }else{
+                            arr = data.list
+                        }
+
+                        $('#suspicious_role1').html(globalData.getOptionList(arr, true));
+
+                         //人员选择时候
+                        $('#suspicious_role1').on('change',function () {
+
+                            var roleId = $(this).val();
+                            
+                             $('.suspicious_transviewBox').children().eq(2).show().children('textarea').attr('disabled',false);
+
+                            //获取人员列表
+                            globalData.getStuffData(roleId);
+
+                        });
+                    }
+                }
+            })
+        },
+
+        //获取人员数据
+        getStuffData: function(postData){
+            var url = '/v1/users';
+
+            $.zAjax({
+                url: globalData.host('roles') + url,
+                data: {
+                    roleIds: postData,
+                },
+                success: function(data){
+                    if(data.code == 0){
+                        var currentRoleId = JSON.parse(sessionStorage.getItem('data')).user.roleIds;
+                    
+                        if(['aml-officer','dd-officer', 'aml-general', 'dd-general'].indexOf(currentRoleId) >= 0){
+                            data.list = data.list.filter(function(item){
+                                if(globalData.$currentId == item.userId){
+                                    return 1;
+                                }
+                                return 0;
+                            })
+                        }
+                        $('#suspicious_auditor').html(globalData.getOptionList(data.list, true, 'userId', 'userName'));
+                    }
+                }
+            })
+        },
+
+        //拼接option
+        getOptionList: function(data, isChange, valueKey, nameKey){
+            valueKey = valueKey || 'roleId';
+            nameKey = nameKey || 'roleName';
+            var str=isChange?'<option value="">'+lang.getData('pleaseChoose')+'</option>':'';
+
+            data.forEach(function(item){
+                str += '<option value="'+item[valueKey]+'">'+item[nameKey]+'</option>'
+            });
+
+            return str;
+        },
+
+        //查看结果
+        getResultData: function () {
+            var url = '/v1/screenLists/batchId';
+
+            $.zAjax({
+                url: this.host() + url,
+                type: 'GET',
+                data: {
+                    custId: globalData.initValue.custId,
+                    dateTime: globalData.initValue.pageData.sdate,
+                },
+                isString: false,
+                success: function (data) {
+                    if(data.code == 0){
+                        data.data = data.data || {}
+                        //附加信息表格
+                        var tdData = {
+                            data: [data.data]
+                        };
+                        $('#otherNote2').html(template('suspicious_resultShow_ohterNote2', tdData));
+                        globalData.getDicData(data.data.susType, function (res) {
+                            globalData.showBtnStatus = data.data.status
+                            globalData.renderBtnList();                      // 渲染按钮（交易网络分析+社交网络分析）
+                            data.data.dataLanguage = $.dataLanguage();
+                            data.data.susType = res;
+                            $('#suspicious_resultShow_resultW').html(template('suspicious_resultShow_result', data.data));  // 渲染 查看结果 模板
+                        });
+                    }
+                }
+            });
+
+        },
+        // 可疑特征
+        getFeatureData: function () {
+            var url = '/v1/features';
+
+            $.zAjax({
+                url: this.host() + url,
+                success: function (data) {
+                    if (data.code == 0) {
+                        var featureArr = globalData.initValue.pageData.susFeatures.split('$^$');
+                        for (var i = 0; i < featureArr.length - 1; i++) {
+                            if (data.data && (data.data.length > 0)) {
+                                data.data[i].checked = 1;
+                            }
+                        }
+                        $("#suspicious_resultShow_featureW").html(template('suspicious_resultShow_feature', data))
+                    }
+                }
+            })
+        },
+        // 客户交易
+        getData: function () {
+            // var url = '/v1/screenListTrans';
+            var url = '/v1/transTotals'
+            var pageData = globalData.data;
+            var urlData = {
+                timeSpan: globalData.initValue.pageData.$timeSpan || '1',
+                custId: globalData.initValue.custId,
+                dateTime: globalData.initValue.pageData.sdate,
+            };
+            urlData = $.extend(urlData, globalData.data);
+            $.zAjax({
+                url: globalData.host() + url,
+                data: urlData,
+                success: function (res) {
+                    if (res.code == 0) {
+                        var total = res.pageInfo && res.pageInfo.total;
+                        var data = res;
+                        $.zPageMethod({
+                            page: '#Pagination',
+                            url: globalData.host() + url,
+                            tp: 'suspicious_result_trade',
+                            ele: '#suspicious_result_tradeW',
+                            total: total,
+                            data: urlData,
+                            list: data,
+                            paginationWrap: '#suspicious_result_tradeBox',
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    //保存当前页码
+                                    globalData.currentPageInfo = res.pageInfo;
+                                    var data = res;
+                                    $('#suspicious_result_tradeW').html(template('suspicious_result_trade', data))
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        },
+
+        paginatFn: function(str, type, getType, ele){
+
+            getType = str.substr(str.length -1, 1);
+
+            var newData = {};
+
+            if( !globalData[str]){
+                    globalData[str] = {
+                        pageSize: 10,
+                        pageN: 1
+                    }
+            }
+            //上一页
+            if(type == 0){
+                if(globalData[str].pageN <= 1){
+                    return
+                }else{
+                    globalData[str].pageN -= 1;
+                }
+            }
+            //下一页
+            if(type == 1){
+                if(globalData[str].pageN == globalData[str].pageTotal){
+                    return
+                }else{
+                    globalData[str].pageN += 1;
+                }
+                
+            }
+
+            var data = {
+                pageSize: globalData[str].pageSize || 10,
+                pageNum: globalData[str].pageN
+            }
+
+            this.getConAyData(getType, ele, data);
+        },
+        //结论分析
+        getConAyData: function (type, ele, pageData) {
+			var pageData1 = pageData
+            var url = '/v1/conclusionInfos';
+
+            pageData = pageData || globalData.pagination1,
+
+            data = {
+                    custId: globalData.initValue.custId,
+                    notBookType: type,
+                    screentId: globalData.initValue.pageData.outId
+                };
+
+            pageData = $.extend(pageData, data);
+            $.zAjax({
+                url: globalData.host() + url,
+                type: 'GET',
+                data: pageData,
+                isString: false,
+                success: function (data) {
+                    if(data.code == 0){
+						
+						if(!pageData1){
+							if(data.list&&data.list[0]&&data.list[0].content){
+								globalData.content = data.list[0].content
+								$(ele).html(data.list[0].content)
+								return
+							}
+						}
+						
+                        var total = data.pageInfo && data.pageInfo.total;
+                        $(ele).html(template('suspicious_result_conAy', data));
+                        $.zPageMethod({
+                            page:'#pagination' + type,
+                            url: globalData.host() + url ,
+                            tp:'suspicious_result_conAy',
+                            ele: ele,
+                            total:total,
+                            data:pageData,
+                            list:data,
+                            $isNotNeddTem: true,
+                            getDataParams: [type, ele],
+                            paginationWrap: ele + '_wrap',
+                            success: function(res){                            
+                                $(ele).html(template('suspicious_result_conAy', res));
+                            }
+                        });
+                    }
+                    
+                }
+            });
+
+        },
+
+        //统一交易图按钮处理
+        dealTraChainBtn: function (url, exData, roleIds) {
+            var choosedTime = {
+                timeSpan: this.initValue.pageData.$timeSpan,
+                $btnType: globalData.fromPageData.btnType,
+            };//时间段
+
+            var userId = JSON.parse(sessionStorage.getItem('data')).user.roleIds;
+            if(roleIds && roleIds.indexOf(userId) < 0){
+                choosedTime.$btnType = 'list';
+            }
+
+            if (exData) {
+                choosedTime = $.extend(exData, choosedTime);
+            }
+
+
+            url = $.builderUrl(url, choosedTime);
+            
+            window.location.hash = url;
+        },
+        //客户交易图按钮--交易链分析
+        traChainAnalysisFn: function () {
+            var url = '#/suspicious/screening/tradeChain';
+
+            this.dealTraChainBtn(url, this.initValue.pageData)
+        },
+        //客户交易图按钮--社交网络分析
+        socialNetAnaFn: function () {
+            var url = '#/suspicious/screening/social';
+            this.dealTraChainBtn(url, this.initValue.pageData)
+        },
+        //客户交易图按钮--审查处理
+        reviewProcessFn: function () {
+            var url = '#/suspicious/screening/checkHandle';
+
+            //经办岗，反洗钱审核岗，反洗钱综合岗；====>审定岗
+           //var roleId= ['666101','666103'];
+			var roleId= ['666105'];
+            this.dealTraChainBtn(url, this.initValue.pageData, roleId);
+
+        },
+        //客户交易图按钮--任务分发
+        distributeTaskFn: function (id) {
+            var url = '#/suspicious/screening/workDistribute';
+
+            this.dealTraChainBtn(url, this.initValue.pageData);
+        },
+
+        getFeaSelection: function (len) {
+            var lenArr = [];
+            len = len || 20;
+
+            for (var i = 0; i < len; i++) {
+                lenArr.push(i);
+            }
+
+            return lenArr.join(',')
+        },
+        //客户交易图按钮--报告预览
+        previewReportFn: function (susType) {
+            var feaSelection = this.getFeaSelection();
+            var timeSpan = this.initValue.pageData.$timeSpan||'1';//选择的时间段数值
+
+            var path = this.host(),
+                oid = this.initValue.pageData.outId,
+                reportFormat = 1;
+            // var url = path + '/v1/reportPdfs/preview?oid=' + oid +
+            //     '&feaSelection=' + feaSelection + '&timeSpan=' + timeSpan;
+
+            var url = path + '/v1/reportPdfs/preview?screentId=' + oid +
+                '&timeSpan=' + timeSpan + '&susType='+(susType===undefined?'':susType);
+            window.open(url, 'previewReport');
+        },
+        //	下载报告
+        downloadReportFn: function () {
+            var susType = '1',  
+                feaSelection = this.getFeaSelection();
+            var timeSpan = this.initValue.pageData.$timeSpan||'1';//选择的时间段数值
+
+            var path = this.host(),
+                oid = this.initValue.pageData.outId,
+                reportFormat = 1;
+			var url = path + '/v1/reportSelectitems/ReviewprocessPro?screentId=' + oid +
+                        '&timeSpan=' + timeSpan;
+			location.href = url;
+            /* var url = path + '/v1/reportPdfs/preview?screentId=' + oid +
+                '&timeSpan=' + timeSpan; */
+           // window.open(url, 'previewReport');
+        },
+        //客户交易关系图数据获取
+        getRelationData: function (val) {
+            var url = '/v1/transMaps';
+            $.zAjax({ 
+                url: this.host() + url,
+                data: {
+                    timeSpan: val||this.initValue.pageData.$timeSpan,
+                    custId: this.initValue.custId,
+                    dateTime: this.initValue.pageData.sdate,
+                },
+                type: 'GET',
+                isString: false,
+                success: function (data) {
+                    if (data) {
+                        var result = data.list||[],
+						result=result.slice(0,10)
+                            chartData = globalData.buildRelationChartData(result);
+
+                        globalData.getCustInfo(chartData);
+                    }
+                }
+            });
+
+        },
+        createRelationChart: function (data, linkData) {
+            var option = {
+                title: {
+                    text: this.getDataValue('tradingNetTitle')
+                },
+                
+                tooltip: {
+                    formatter: function (x) {
+                        if(!x.data.custId)return
+                        return globalData.getDataValue('customerNum') + "：" + x.data.custId;
+                    }
+                },
+                // animationDurationUpdate: 100,
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    symbolSize: 60,
+                    roam: true,
+                    edgeSymbol: ['circle', 'arrow'], //箭头样式
+                    edgeSymbolSize: [4, 8],//箭头大小
+                    categories: [
+                        {
+                            name: this.getDataValue('person')
+                        },
+                        {
+                            name: this.getDataValue('family')
+                        },
+                        {
+                            name: this.getDataValue('friend')
+                        }
+                    ],
+                    force: {
+                        repulsion: 1500,
+                        edgeLength: [100, 100],
+                        layoutAnimation: true,
+                    },
+                    draggable: true,
+                    itemStyle: {
+                        normal: {
+                            color: '#999',
+                            opacity: 1,
+                        }
+                    },
+                    lineStyle: {
+                        normal: {
+                            width: 2,
+                            color: '#4b565b',
+                            opacity: 1,
+                            curveness:0.05
+                        }
+                    },
+                    edgeLabel: {
+                        normal: {
+                            show: true,
+                            formatter: function (x) {
+
+                                return x.data.value;
+                            }
+                        }
+                    },
+                    label: {
+                        normal: {
+                            show: true,
+                            textStyle: {},
+                            formatter: function(data){
+								if(data.data.value){
+									return globalData.dealStr(data.data.name);
+								}else{
+									return data.data.custId
+								}
+                                // return data.data.custId;
+                            }
+                        }
+                    },
+                    data: data,
+                    links: linkData
+                }]
+            };
+
+            var echart = echarts.init(document.getElementById('suspicious_resultShow_tradingNetW'));
+
+            echart.setOption(option);
+
+            // window.onresize = function () {
+            //     echart.resize();
+            // } 
+            return option;
+        },
+        /* 组建图表数据 */
+        buildRelationChartData: function (data) {
+            var serializeJson = {}, serializelinkJson = {}, baseData = [], linkData = [], dataLanguage = $.dataLanguage();
+            $.each(data, function (i, item) {
+                serializeJson = {
+                    custId: item.oppCustId,
+                    oppCustId: item.oppCustId,
+                    trxCount: item.trxCount,
+                    trxAmt: item.trxAmt,
+                    name: item.oppCustNm,
+					value:item.oppCustId,
+                    category: 1,
+                    indexF: i,
+                    draggable: true,
+					isSusOppCust:item.isSusOppCust
+					
+                    // tooltip: globalData.getToolTip(dataLanguage, item),
+                    // des: globalData.getToolTip(dataLanguage, item, true),
+                };
+				
+				if($.isHw(serializeJson.value)=='hn'){
+					serializeJson.itemStyle={}
+					serializeJson.itemStyle.normal={}
+					serializeJson.itemStyle.normal.shadowBlur=30
+					serializeJson.itemStyle.normal.shadowColor='#000'
+				}
+				if($.isHw(serializeJson.value)=='xj'&& serializeJson.category!=0){
+					serializeJson.itemStyle={}
+					serializeJson.itemStyle.normal={}
+					serializeJson.itemStyle.normal.color='#000'
+				}
+				
+				if(serializeJson.isSusOppCust == '1'){
+					serializeJson.itemStyle.normal.borderColor=serializeJson.itemStyle.normal.color;
+					serializeJson.itemStyle.normal.color={}
+					serializeJson.itemStyle.normal.color.type='radial'
+					serializeJson.itemStyle.normal.color.x=.5
+					serializeJson.itemStyle.normal.color.y=.5
+					serializeJson.itemStyle.normal.color.r=45
+					serializeJson.itemStyle.normal.color.colorStops=[
+						{
+							offset:0.98,
+							color:serializeJson.itemStyle.normal.borderColor||'#999',
+						},
+						{
+							offset:1,
+							color:'#fff'
+						}
+					]
+					serializeJson.symbolSize=$.sortAmtQ(serializeJson.trxAmt)
+				}
+				
+                var serializelinkJson1=null;
+                console.log(item)
+                if(item.outputAmt){
+                    serializelinkJson = {
+                        // source: 0,
+                        // target: i + 1,
+                        target:item.outputAmt ? item.oppCustNm : item.custNm,
+                        source:item.outputAmt ? item.custNm : item.oppCustNm,
+                        value: item.outputCount + "次 -" + $.zFormatMoney(item.outputAmt),
+                        // des: globalData.getToolTip(dataLanguage, item, true),
+                    };
+                }
+                
+                if(item.inputAmt){
+                    serializelinkJson1=serializelinkJson;
+                    serializelinkJson1={
+                        // source: 0,
+                        // target: i + 1,
+                        source: item.inputAmt ? item.oppCustNm : item.custNm,
+                        target: item.inputAmt ? item.custNm : item.oppCustNm,
+                        value: item.inputCount + "次 -" + $.zFormatMoney(item.inputAmt),
+                        // des: globalData.getToolTip(dataLanguage, item, true),
+                    };
+                }
+                linkData.push({ "source": 0, "target": 0, });
+                linkData.push(serializelinkJson);
+                if(serializelinkJson1)linkData.push(serializelinkJson1);
+                baseData.push(serializeJson);
+            });
+            return {baseData: baseData, linkData: linkData}
+        },
+        /* 获取当前custId的客户信息 */
+        getCustInfo: function (chartData) {
+            var custInfo = {},
+                url = '/v1/custInfos',
+                dataLanguage = $.dataLanguage();
+            $.zAjax({
+                url: this.host() + url,
+                isString: false,
+                data: {
+                    custid: this.initValue.custId
+                },
+                success: function (data) {	
+                    if(data.code == 0){
+                        var result = data.data[0], str = "";
+                        if (!result) return;
+                        str = "<p>" + dataLanguage.customerName + "：" + result.custNm + "</p><p>" + dataLanguage.customerNum + "：" + result.custId +
+                        "</p><p>" + dataLanguage.transactionTimes + "： -</p><p>" + dataLanguage.transactionSum + "：-</p><p>" + dataLanguage.opponentCustomerName + "：-</p><p>" + dataLanguage.opponentCustomerNum + "：- </p>";
+                        custInfo = {
+                            custId: result.custId,
+                            name: result.custNm,
+                            value: result.custId,
+                            category: 0,
+                            draggable: true,
+                            tooltip: str,
+                            des: str,
+                            itemStyle: {
+                                normal: {
+                                    color: "red",
+                                    opacity: 1,
+                                }
+                            }
+                        };
+						
+                        chartData.baseData.unshift(custInfo);
+                        globalData.createRelationChart(chartData.baseData, chartData.linkData);
+                    }else{
+                        layer.msg(data.errMsg);
+                    }
+                    
+                }
+            });
+            return custInfo
+        },
+        
+
+        
+
+        getToolTip: function(dataLanguage, item, hasDom){
+
+            var str = "<p>" + dataLanguage.customerName + "：" + item.custNm + "</p><p>" + dataLanguage.customerNum + "：" + item.custId + "</p><p>" + dataLanguage.transactionTimes + "：" + item.trxCount +
+                        "</p><p>" + dataLanguage.transactionSum + "：" + $.zFormatMoney(item.trxAmt) + "</p><p>" + dataLanguage.opponentCustomerName + "：" + item.oppCustNm +
+                        "</p><p>" + dataLanguage.opponentCustomerNum + "：" + item.oppCustId + "</p>";
+                        //如果不需要标签元素
+                        if(hasDom){
+                            str = str.replace(/<\/*p>/g, "")
+                        }
+
+                        return str;
+        },
+
+        getDicData: function(susType, fn){
+            var url = '/v1/dictDatas/dictDatasSelect/susType';
+
+            $.zAjax({
+                url: globalData.host('dicts') + url,
+                success: function(data){
+                    if(data && data.length > 0){
+                        var result = susType;
+                        data.forEach(function(item){
+                            if(item.dictValue == susType){
+                                result = item.dictLabel;
+                            }
+                        })
+
+                        fn(result);
+                    }
+                }
+            })
+        },
+        // 初始化
+        init: function () {
+            var data = $.dataLanguage();    // 国际化
+            this.getResultId();
+            data.isCanUseState = globalData.isCanUseState;
+            data.$btnType = globalData.initValue.pageData.$btnType;
+            $('#main').prepend(template('suspicious_resultShow', data));
+			$.zCompositeData(common_params['rbac']['suspiciousTimeChoose'],'#suspicious_time_result',false);
+			$.zCompositeData(common_params['rbac']['suspiciousTimeChoose'],'#suspicious_time_show',false);
+			
+            // 时间跨度下拉框change事件
+            $('#suspicious_time_show').change(function () {
+                var val = $(this).val()
+                val = Number(val)
+                var sdate = $.getUrlParams().sdate
+                $('#endDate').val(sdate)                // 设置 客户交易-截止日期
+                $('#showEndDate').val(sdate)            // 设置 交易网络-截止日期
+
+                var timer = new Date(sdate)
+                timer.setMonth(timer.getMonth() - val)
+                timer = $.timeFormat(timer, 'yyyy-MM-dd',true)
+                $('#beginDate').val(timer)              // 设置 客户交易-开始日期
+                $('#showBeginDate').val(timer)          // 设置 交易网络-开始日期
+
+               // globalData.initValue / pageData.$timeSpan = val
+                globalData.getRelationData(val)
+            })
+            
+            $('#suspicious_time_show').val($.getUrlParams().$timeSpan)
+
+            // $('#suspicious_time_show').trigger('change')
+			
+			
+			// 给开始日期和截止日期绑定dateV日期格式化事件
+			$.dateV('.dateClass')
+
+           
+            this.initPageData();        // 初始化页面数据
+            this.event();               // 事件绑定
+            this.getResultData();       // 生成 查看结果
+            this.getRelationData();     // 生成 交易网络
+            this.getData();             // 生成 客户交易
+            this.getFeatureData();      // 生成 模型可疑特征分析
+			
+            // 结论分析
+            // this.getConAyData('1', '#chainNote');
+            // this.getConAyData('2', '#socialNote');
+            // this.getConAyData('3', '#otherNote');
+			this.getConAyData('3','#summaryNote')   // 生成结论分析
+        },
+
+        // 事件绑定
+        event: function () {
+             //人员选择时候
+            $('#suspicious_resultShow').delegate('#suspicious_role1','change',function () {
+                var roleId = $(this).val();
+                 $('.suspicious_transviewBox').children().eq(2).show().children('textarea').attr('disabled',false);
+                //获取人员列表
+                globalData.getStuffData(roleId);
+            });
+            // 总体认定意见输入框 输入字数计算及截断
+            $("body").on("input propertychange", "textarea", function () {
+                var len = $(this).val().length;
+                if (len >= 500) {
+                    len = 500;
+                }
+                $(this).val($(this).val().substr(0, 500)).siblings().eq(0).html(len);
+            })
+			// 监听滚动事件，当滚动高度大于150时，查看结果Panel变成固定位置浮动
+			$('#main').on('scroll', function (e) {
+                if (e.target.scrollTop > 150) {
+                    $('#navSuspicios').addClass('add')
+                } else {
+                    $('#navSuspicios').removeClass('add')
+                }
+            })
+        },
+		
+		backPage: function () {
+            var str = $.trim($('#summaryNote').val())
+            if (str != '' && globalData.content === undefined) {
+                var ii = layer.confirm('总体认定意见有输入文字，请确定已经保存！', function () {
+                    location.hash = $.builderUrl('/suspicious/screening/automonitor', $.getUrlParams());
+                    layer.close(ii)
+                })
+            } else {
+                location.hash = $.builderUrl('/suspicious/screening/automonitor', $.getUrlParams());
+            }
+        }
+    };
+
+    $(document).ready(function () {
+        // 初始化
+        globalData.init();
+    })
+</script>

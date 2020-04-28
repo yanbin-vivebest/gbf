@@ -1,0 +1,679 @@
+<!--智能检测结果-->
+<style type="text/css">
+	.suspicious_pages {
+		overflow: hidden;
+		padding-bottom: 30px;
+	}
+
+	.center {
+		width: 100%;
+		text-align: center;
+	}
+
+	.relative {
+		position: relative;
+	}
+
+	textarea {
+		min-height: 80px;
+		padding-bottom: 15px !important;
+	}
+
+	.textarealen {
+		font-size: 10px;
+		position: absolute;
+		right: 18px;
+		bottom: 0px;
+		transform: scale(.8);
+		-ms-transform: scale(.8);
+		/* IE 9 */
+		-webkit-transform: scale(.8);
+		/* Safari 和 Chrome */
+		-o-transform: scale(.8);
+		/* Opera */
+		-moz-transform: scale(.8);
+		/* Firefox */
+		color: #000;
+	}
+
+	.textarealen:after {
+		content: "\/500";
+		font-size: 10px;
+		color: #000;
+	}
+
+	.nav-tabs>li>a{
+		cursor: pointer;
+	}
+	.nav-tabs>li.active>a,
+	.nav-tabs>li.active>a:hover,
+	.nav-tabs>li.active>a:focus {
+		background: #999;
+		color: #fff;
+	}
+</style>
+<script type="text/html" id="suspicious_handleStatus">
+	<div class="suspicious_pages" id="suspicious_handleStatus">
+		<div class="panel panel-lined">
+			<div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{listTitle}}</div>
+			<ul id="navTab" class="nav nav-tabs">
+				<li class="active">
+					<a>处理情况报告</a>
+				</li>
+				<li class="">
+					<a>统计报告</a>
+				</li>
+			</ul>
+			<!-- 处理情况报告 -->
+			<div class="divContent">
+				<div class="panel-body">
+					<!-- 搜索区 -->
+					<div class="panel-body" id="searchData">
+						<!-- 开始日期输入框 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-md-4 control-label">{{beginDate}}</label>
+								<div class="col-md-8">
+									<input type="password" style="display:none" value="">
+									<input type="text" class="form-control field" id="beginDate" placeholder={{beginDate}} name="beginDate" />
+								</div>
+							</div>
+						</div>
+						<!-- 结束日期输入框 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-md-4 control-label">{{endDate}}</label>
+								<div class="col-md-8">
+									<input type="password" style="display:none" value="">
+									<input type="text" class="form-control field dateClass" id="endDate" name="endDate" placeholder="{{endDate}}" />
+								</div>
+							</div>
+						</div>
+						<!-- 初审人输入框 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-md-4 control-label">{{amlDuty}}</label>
+								<div class="col-md-8">
+									<input type="password" style="display:none" value="">
+									<input type="text" class="form-control field" id="amlDuty" name="amlDuty"
+										placeholder="{{amlDuty}}" value="">
+								</div>
+							</div>
+						</div>
+						<!-- 搜索 和 重置 按钮组 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<div class="col-md-12">
+									<div style="width:185px;">
+										<span id="searchBtn"
+											class="btn btn-primary pull-left fa fa-search">{{search}}</span>
+										<span id="resetBtn"
+											class="btn btn-warning pull-right fa fa-refresh">{{reset}}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 结果展示区 -->
+					<div class="">
+						<!-- 搜索结果表格 -->
+						<table class="table table-bordered table-striped zCheckBox">
+							<thead class="thead">
+								<tr>
+									<th>{{findDate}}</th>
+									<th>{{suspiciousNum}}</th>
+									<th>{{customerName}}</th>
+									<th>{{customerNum}}</th>
+									<th>{{customerType}}</th>
+									<th>{{cardId}}</th>
+									<th>{{kyc}}</th>
+									<th>{{bankNo}}</th>
+									<th>{{bankName}}</th>
+									<th>{{isSuspicious}}</th>
+									<th>{{operator}}</th>
+									<th>{{name}}</th>
+									<th>{{handleDate}}</th>
+								</tr>
+							</thead>
+							<tbody id="suspicious_handleStatusTbodyW">
+								<tr>
+									<td colspan="20" style="text-align: center;">{{loading}}</td>
+								</tr>
+							</tbody>
+						</table>
+						<!-- 分页按钮组 -->
+						<div class="page">
+							<div class="pager_container" id="Pagination"></div>
+						</div>
+						<!-- 生成处理情况报告按钮 -->
+						<div class="center">
+							<span class="btn btn-primary" id='downBtn'>{{exportReport}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- 统计报告 -->
+			<div class="divContent dn">
+				<div class="panel-body">
+					<!-- 搜索区 -->
+					<div class="panel-body" id="searchData1">、
+						<!-- 姓名输入框 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-md-4 control-label">姓名</label>
+								<div class="col-md-8">
+									<input type="text" class="form-control field" id="userName" name="userName" value="">
+								</div>
+							</div>
+						</div>
+						<!-- ID输入框 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<label class="col-md-4 control-label">Id</label>
+								<div class="col-md-8">
+									<input type="text" class="form-control field" id="userId" name="userId" value="">
+								</div>
+							</div>
+						</div>
+						<!-- 搜索 和 重置 按钮组 -->
+						<div class="col-md-3">
+							<div class="form-group">
+								<div class="col-md-12">
+									<div style="width: 185px;">
+										<span id="searchBtn1" class="btn btn-primary pull-left fa fa-search">{{search}}</span>
+										<span id="resetBtn1" class="btn btn-primary pull-left fa fa-search">{{reset}}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 结果展示区 -->
+					<div class="">
+						<!-- 搜索结果表格 -->
+						<table class="table table-bordered table-striped zCheckBox">
+							<thead class="thead">
+								<tr>
+									<th>序号</th>
+									<th>ID</th>
+									<th>姓名</th>
+									<th>处理案件数</th>
+									<th>可疑案件数</th>
+									<th>不可疑案件数</th>
+								</tr>
+							</thead>
+							<tbody id="suspicious_handleStatusTbodyW1">
+								<tr>
+									<td colspan="7" style="text-align: center;">{{loading}}</td>
+								</tr>
+							</tbody>
+						</table>
+						<!-- 分页按钮组 -->
+						<div class="page">
+							<div class="pager_container" id="Pagination1"></div>
+						</div>
+						<!-- 生成处理情况报告按钮 -->
+						<div class="center">
+							<span class="btn btn-primary" onclick="globalData.distributeTaskFn()">生成统计报表</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
+
+<!--处理情况列表-->
+<script type="text/html" id="suspicious_handleStatusTbody">
+	{{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td>{{value.sdate}}</td>
+        <td style="max-width: 80px;">{{value.susNum}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custType}}</td>
+        <td>{{value.cardId}}</td>
+        <td>{{value.kyc}}</td>
+        <td>{{value.bankNo}}</td>
+        <td>{{value.bankName}}</td>
+        <!-- <td>{{value.trxStrtDate}}</td>
+        <td>{{value.trxEndDate}}</td>
+        <td>{{value.cycleDate}}</td>
+        <td>{{value.tranAmout}}</td>
+        <td>{{value.trxCount}}</td>
+        <td>{{value.trxOppCount}}</td> -->
+        <td>{{value.isSuspicious}}</td>
+<!--
+        <td>{{value.crimeType}}</td>
+        <td>{{value.monLdType}}</td>
+        <td>{{value.suspiciousRate}}</td>
+        <td>{{value.susCustNum}}</td>
+
+        <td>{{value.amlDuty}}</td>
+        <td>{{value.amlAudit}}</td>
+        <td>{{value.amlOfficer}}</td>
+-->
+        <td>{{value.operator}}</td>
+        <td>{{value.name}}</td>
+        <td>{{value.handleDate}}</td>
+
+
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="17" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<script type="text/html" id="suspicious_handleStatusTbody1">
+	{{if list && list.length>0}}
+		{{each list as value i}}
+			<tr _id="{{value.id}}">
+				<td>{{i+1}}</td>
+				<td>{{value.id}}</td>
+				<td>{{value.name}}</td>
+				<td>{{value.totalCount}}</td>
+				<td>{{value.susCount}}</td>
+				<td>{{value.unSusCount}}</td>
+			</tr>
+		{{/each}}
+		{{else}}
+		<tr>
+			<td colspan="7" style="text-align: center;">{{1 | noData}}</td>
+		</tr>
+	{{ /if }}
+</script>
+
+
+<script>
+	var globalData = {
+		initValue: {
+			pageData: {}
+		},
+		data: {
+			pageNum: 1,
+			pageSize: 10
+		},
+		data1:{
+			pageNum: 1,
+			pageSize: 10
+		},
+		//当前页码
+		currentPageInfo: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+
+		custTypeDicData: [], //字典数据
+
+		getDataValue: function(key) {
+			if (!key) {
+				return '';
+			}
+			return this.initValue[key][lang.getLang()];
+		},
+		host: function(obj) {
+			return project.host(obj);
+		},
+		
+		// 生成统计报表
+		distributeTaskFn: function () {
+			var url = "/v1/screenLists/excelsHandleStatusCount";
+			var data = $.zSearchFn(globalData.data, '#searchData1 .field'),
+				userData = JSON.parse(sessionStorage.getItem('data')).user
+
+			url = globalData.host() + url + '?beginDate=' + data.beginDate + '&endDate=' + data.endDate + '&roleId=' + userData.roleIds + '&userId=' + data.userId + '&userName=' + data.userName;
+
+			// 显示遮罩层
+			var index = layer.load(3, {
+				shade: .1
+			})
+			// 开始AJAX请求
+			var req = new XMLHttpRequest();
+			req.open('GET', url, true);
+			// 当请求成功时，关闭遮罩层
+			req.onprogress = function (e) {
+				if (e.target.status = 200) {
+					layer.close(index);
+				}
+			}
+			req.setRequestHeader('Content-Type', 'application/json');
+			req.responseType = 'blob';
+			req.onload = function () {
+				var data = req.response;
+				var blob = new Blob([data]);
+				var blobUrl = window.URL.createObjectURL(blob);
+				var tempElement = document.createElement('a');
+				tempElement.download = '案例处理统计导出.xls'
+				tempElement.href = blobUrl;
+				tempElement.click();
+				tempElement = null
+				window.URL.revokeObjectURL(blobUrl)
+			}
+			req.send('');
+			setTimeout(function () {
+				layer.close(index)
+			}, 20000);
+		},
+		
+
+		//获取字典数据
+		getDicData: function(fn) {
+			var url = '/v1/dictDatas/dictDatasSelect/custType';
+
+			//如果存在字典数据了， 直接使用
+			if (globalData.custTypeDicData && globalData.custTypeDicData.length > 0) {
+				fn && fn(globalData.custTypeDicData);
+				return;
+			}
+
+			$.zAjax({
+				url: globalData.host('dicts') + url,
+				success: function(data) {
+					var result = '';
+
+					globalData.custTypeDicData = data;
+					fn && fn(data)
+				}
+			})
+		},
+
+		//将客户类型按照字典数据转换， dicData 字典数据， data 列表数据
+		changeDataToDic: function(dicData, data) {
+			data = data || [];
+			data.forEach(function(item) {
+				for (var i = 0; i < dicData.length; i++) {
+					if (item.custType == dicData[i].dictValue) {
+						item.custTypeText = dicData[i].dictLabel;
+					}
+				}
+			})
+
+			return data;
+		},
+
+		// 处理情况报告查询
+		handleSituationReport: function(pageData) {
+
+			var url = globalData.host() + '/v1/screenLists/handleStatus';
+
+			var userData = JSON.parse(sessionStorage.getItem('data')).user,
+
+				pageData = pageData || globalData.data;
+
+			pageData = $.extend(pageData, {
+				roleId: userData.roleIds,
+				userId: userData.userId
+			});
+
+			$.zAjax({
+				url: url,
+				data: pageData,
+				success: function(data) {
+					if (data.code == 0) {
+						data.pageInfo = data.pageInfo || {};
+						var total = data.pageInfo && data.pageInfo.total;
+						//保存当前页码
+						globalData.currentPageInfo = data.pageInfo;
+
+						globalData.initValue.transListData = data;
+
+						globalData.getDicData(function(dicData) {
+							data.list = globalData.changeDataToDic(dicData, data.list);
+
+							$.zPageMethod({
+								page: '#Pagination',
+								url: url,
+								tp: 'suspicious_handleStatusTbody',
+								ele: '#suspicious_handleStatusTbodyW',
+								total: total,
+								data: pageData,
+								list: data,
+								success: function(res) {
+									globalData.initValue.transListData = res;
+
+									//保存当前页码
+									globalData.currentPageInfo = res.pageInfo;
+
+									var data = {
+										list: res.list
+									};
+
+									globalData.getDicData(function(dicData) {
+										data.list = globalData.changeDataToDic(dicData, data.list);
+										$('#suspicious_handleStatusTbodyW').html(template('suspicious_handleStatusTbody', data));
+
+										$.btnPermissions(); //生成表格按钮
+									})
+
+								}
+							});
+						})
+
+
+					} else {
+						layer.msg(data.des)
+					}
+
+				}
+			});
+
+			$.btnPermissions(); //生成表格按钮
+
+		},
+		
+		// 统计报告查询
+		statisticsReport: function(pageData) {
+		
+			var url = globalData.host() + '/v1/screenLists/handleStatusCount';
+			var data = $.zSearchFn(globalData.data,'#searchDatal .field'),
+			userData = JSON.parse(sessionStorage.getItem('data')).user,
+		
+		
+			pageData = pageData || globalData.data;
+		
+			pageData = $.extend(pageData, {
+				roleId: userData.roleIds,
+				userId: $("#userId").val(),
+			});
+		
+			$.zAjax({
+				url: url,
+				data: pageData,
+				success: function(data) {
+					if (data.code == 0) {
+						data.pageInfo = data.pageInfo || {};
+						var total = data.pageInfo && data.pageInfo.total;
+						//保存当前页码
+						globalData.currentPageInfo = data.pageInfo;
+		
+						globalData.initValue.transListData = data;
+		
+						globalData.getDicData(function(dicData) {
+							data.list = globalData.changeDataToDic(dicData, data.list);
+		
+							$.zPageMethod({
+								page: '#Pagination1',
+								url: url,
+								tp: 'suspicious_handleStatusTbody1',
+								ele: '#suspicious_handleStatusTbodyW1',
+								total: total,
+								data: pageData,
+								list: data,
+								success: function(res) {
+									globalData.initValue.transListData = res;
+		
+									//保存当前页码
+									globalData.currentPageInfo = res.pageInfo;
+		
+									var data = {
+										list: res.list
+									};
+		
+									globalData.getDicData(function(dicData) {
+										data.list = globalData.changeDataToDic(dicData, data.list);
+										$('#suspicious_handleStatusTbodyW1').html(template('suspicious_handleStatusTbody1', data));
+		
+										$.btnPermissions(); //生成表格按钮
+									})
+		
+								}
+							});
+						})
+		
+		
+					} else {
+						layer.msg(data.des)
+					}
+		
+				}
+			});
+		
+			$.btnPermissions(); //生成表格按钮
+		
+		},
+
+
+
+
+
+		init: function() {
+			var startLayDate, endLayDate;
+			$('#main').prepend(template('suspicious_handleStatus', $.dataLanguage()));
+
+			this.event();
+
+			//智能交易列表
+			this.handleSituationReport();
+
+
+
+			// 调用日期插件
+			/*startLayDate = laydate.render({
+				elem: '#beginDate',
+				lang: $.getLayDateLang(),
+				done: function(value, date, endDate) {
+					endLayDate.config.min = {
+						year: date.year,
+						month: date.month - 1,
+						date: date.date,
+					}
+				}
+			});
+			endLayDate = laydate.render({
+				elem: '#endDate',
+				lang: $.getLayDateLang(),
+				done: function(value, date, endDate) {
+					startLayDate.config.max = {
+						year: date.year,
+						month: date.month - 1,
+						date: date.date,
+					}
+				}
+			});*/
+			$.dateV('#beginDate')
+			$.dateV('#endDate')
+		},
+		event: function() {
+			$.btnPermissions();
+			// 处理情况报告 查询按钮事件
+			$('#searchBtn').on('click', function() {
+				var data = $.zSearchFn(globalData.data, '#searchData .field');
+				globalData.handleSituationReport(data);
+			});
+			// 处理情况报告 重置按钮事件
+			$('#resetBtn').click(function() {
+				document.getElementById("beginDate").value = ""
+				document.getElementById("endDate").value = ""
+				document.getElementById("amlDuty").value=""
+				var data = $.zSearchFn(globalData.data, '#searchData .field');
+				globalData.handleSituationReport(data);
+			});
+			// 统计报告 查询按钮事件
+			$('#searchBtn1').on('click', function() {
+				var data = $.zSearchFn(globalData.data, '#searchData1 .field');
+				globalData.statisticsReport(data);
+			});
+			// 统计报告 查询按钮事件
+			$('#resetBtn1').click(function() {
+				document.getElementById("userName").value = ""
+				document.getElementById("userId").value = ""
+				var data = $.zSearchFn(globalData.data, '#searchData1 .field');
+				globalData.statisticsReport(data);
+			});
+
+			// 处理情况报告导出按钮事件
+			$('#downBtn').on('click', function() {
+				var str = "",
+					url = '/v1/screenLists/excelsHandleStatus';
+				var data = $.zSearchFn(globalData.data, '#searchData .field'),
+					userData = JSON.parse(sessionStorage.getItem('data')).user;
+
+				url = globalData.host() + url + '?beginDate=' + data.beginDate + '&endDate=' + data.endDate + '&roleId=' +
+					userData.roleIds + '&userId=' + userData.userId;
+
+				// window.location.href = str;
+				
+				var index = layer.load(3,{shade:.1})
+
+				var req = new XMLHttpRequest()
+				req.open('GET',url,true)
+				
+				req.onprogress = function(e){
+					if(e.target.status == 200){
+						layer.close(index)
+					}
+				}
+				req.responseType = 'blob'
+				req.setRequestHeader('Content-Type', 'application/json')
+				req.onload = function () {
+					var data = req.response
+					var blob = new Blob([data])
+					var blobUrl = window.URL.createObjectURL(blob)
+					var tempElement = document.createElement('a')
+					tempElement.download = "处理报告导出.xls"
+					tempElement.href = blobUrl
+					tempElement.click()
+					tempElement = null
+					window.URL.revokeObjectURL(blobUrl)
+				}
+				req.send('')
+				setTimeout(function () {
+					layer.close(index)
+				}, 20000)
+
+			});
+			
+			$('#navTab').on('click', 'li', function () {
+				$('#navTab li').removeClass('active')
+				$(this).addClass('active')
+				var index = $(this).index()
+				if (index == 0) {
+					// 处理情况报告查询
+					globalData.handleSituationReport()
+				} else {
+					// 统计报告查询
+					globalData.statisticsReport()
+				}
+				$('.divContent').hide().eq(index).show()
+			});
+
+
+			$("body").on("input propertychange", "textarea", function() {
+				var len = $(this).val().length;
+				if (len >= 500) {
+					len = 500;
+				}
+
+				$(this).val($(this).val().substr(0, 500)).siblings().eq(0).html(len);
+			})
+
+		}
+	};
+
+	$(document).ready(function() {
+		globalData.init();
+	})
+</script>

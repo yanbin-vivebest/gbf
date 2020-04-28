@@ -1,0 +1,735 @@
+<!--初筛交易查看--查看数据结果-->
+<script type="text/html" id="suspicious_approval">
+    <div class="suspicious_pages mg-tb-5">
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i><span>{{result}}</span><span class="pull-right" onclick="window.history.go(-1)"><a
+                    href="javascript:;">{{back}}</a></span></div>
+            <div class="panel-body" id="suspicious_resultShow_resultW">
+
+            </div>
+        </div>
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{feature}}</div>
+            <div class="panel-body" id="suspicious_resultShow_featureW">
+
+            </div>
+        </div>
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{tradingNet}}</div>
+            <div class="panel-body" style="position: relative;">
+                <div id="suspicious_resultShow_tradingNetW" class="suspicious_result_echarts"></div>
+                <div id="suspicious_resultShow_OperationW" class="col-md-4 suspicious_resultShow_Operation">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{customerTrading}}</div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped zCheckBox">
+                    <thead>
+                    <tr>
+                        <th>{{transactionDate}}</th>
+                        <th>{{transactionTime}}</th>
+                        <th>{{customerN}}</th>
+                        <th>{{customerNm}}</th>
+                        <th>{{transactionAmount}}</th>
+                        <th>{{balance}}</th>
+                        <th>{{opponentCardNum}}</th>
+                        <th>{{opponentCustomerNum}}</th>
+                        <th>{{opponentCustomerName}}</th>
+                        <th>{{abstracts}}</th>
+                        <th>{{otherInfo}}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="suspicious_result_tradeW">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel panel-lined hide" id="markBox">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{markAdjustments}}</div>
+            <div class="panel-body">
+                <table class="table suspicious_result_consAy">
+                    <tr>
+                        <td>{{markAdjustments}}</td>
+                        <td id="markAdjustments"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="panel panel-lined hide" id="handleBox">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{handlingOpinions}}</div>
+            <div class="panel-body">
+                <table class="table suspicious_result_consAy">
+                    <tr>
+                        <td>{{handlingOpinions}}</td>
+                        <td id="handlingOpinions"></td>
+                    </tr>
+                </table>
+
+                <div class="col-md-12 center" id="btnBox">
+                    <span class="btn btn-primary" conclick="globalData.save()">{{save}}</span>
+                    <span class="btn btn-primary" onclick="globalData.returnBtnFn()">{{returnBtn}}</span>
+                    <span class="btn btn-primary" onclick="window.history.go(-1)">{{back}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-lined hide" id="handleBox1">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{handlingOpinions}}</div>
+            <div class="panel-body">
+                <div class="suspicious_transviewBox">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label required">{{post}}： </label>
+                            <div class="col-md-8">
+                                <select name="status" class="form-control field" id="suspicious_role">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class=" col-md-12">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label required">{{stuff}}： </label>
+                            <div class="col-md-8">
+                                <!--<input  maxlength="30" type="text" class="form-control field fieldReadOnly" name="auditor" placeholder="{{11}} " value=""/>-->
+                                <select name="auditor" class="form-control field" id="suspicious_auditor">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label required">{{matter}}： </label>
+                            <div class="col-md-8">
+                                <textarea class="form-control field fieldReadOnly" name="content" id="suspicious_matter"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <span class="btn btn-primary" conclick="globalData.save()">{{save}}</span>
+                        <span class="btn btn-primary" onclick="globalData.returnBtnFn()">{{returnBtn}}</span>
+                        <span class="btn btn-primary" onclick="window.history.go(-1)">{{back}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<!--查看结果-->
+<script type="text/html" id="suspicious_resultShow_result">
+    <div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.findDate}}: {{sdate || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.customerNum}}: {{custId || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.customerName}}: {{custNm || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.involveAmount}}: {{amount || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.involveNum}}: {{trxCount || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.reportingBody}}: {{bankName || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.reportingDepartment}}: {{departmentName || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.dollarSaleRate}}: {{usdSell || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.dollarExRate}}: {{usdEx || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.opponentNum}}: {{trxOppCount || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.upOpponent}}: {{upperOppNumber || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.otherSaleRate}}: {{frgCrySell || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.otherResponsible}}: {{frgCryEx || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.downOpponent}}: {{lowerOppNumber || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.startData}}: {{trxStrtDate || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.endData}}: {{trxEndDate || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.recognitionType}}: {{susType || 0}}</div>
+        <div class="col-md-2 pd-1rem col-sm-4 col-xs-6">{{dataLanguage && dataLanguage.status}}: {{isReport | getParamsStatus :'suspiciousTransList'}}</div>
+    </div>
+</script>
+
+<!--客户交易图按钮-->
+<script type="text/html" id="suspicious_resultShow_Operation">
+    <span id="searchBtn1" class="btn btn-primary pull-left col-md-12" onclick="globalData.traChainAnalysisFn()">{{tradingChainAnalysis}}</span>
+    <span id="searchBtn2" class="btn btn-primary pull-left col-md-12" onclick="globalData.socialNetAnaFn()">{{socialNetAnalysis}}</span>
+    <span id="searchBtn3" class="btn btn-primary pull-left col-md-12" onclick="globalData.reviewProcessFn()">{{reviewProcess}}</span>
+    <span id="searchBtn4" class="btn btn-primary pull-left col-md-12" onclick="globalData.distributeTaskFn()">{{distributeTask}}</span>
+    <span id="searchBtn5" class="btn btn-primary pull-left col-md-12" onclick="globalData.previewReportFn()">{{previewReport}}</span>
+</script>
+
+<!--客戶交易-->
+<script type="text/html" id="suspicious_result_trade">
+
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr>
+        <td>{{value.trxDt}}</td>
+        <td>{{value.trxTm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.trxAmt}}</td>
+        <td>{{value.onlBal}}</td>
+        <td>{{value.oppEacId}}</td>
+        <td>{{value.oppCustId}}</td>
+        <td>{{value.oppCustNm}}</td>
+        <td>{{value.sabstract }}</td>
+        <td>{{value.otherInfo }}</td>
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="11" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+
+</script>
+
+<!--可疑特征-->
+<script type="text/html" id="suspicious_resultShow_feature">
+    <ul>
+        {{each data as value i}}
+        <li class="col-md-2 col-sm-3 col-xs-4 mg-tb-5 suspicious_checkBoxF">
+            {{if value.checked}}
+            <span class="zCheck zCBox zC-sm"></span><b>{{value.name}}</b>
+            {{else}}
+            <span class="zCBox zC-sm"></span>{{value.name}}
+            {{/if}}
+        </li>
+        {{/each}}
+    </ul>
+</script>
+
+<script>
+    var globalData = {
+        initValue: {
+            id: '',
+            tradingNetTitle: {
+                zh_cn: '客户交易关系图', en_us: 'Customer Transaction Diagram', zh_cht: '客戶交易關係圖',
+            },
+            saveTips:{
+                zh_cn: '保存结论成功！', en_us: 'Save successfully!', zh_cht: '保存結論成功！',
+            },
+            person: {
+                zh_cn: '人物', en_us: 'Person', zh_cht: '人物',
+            },
+            family: {
+                zh_cn: '家人', en_us: 'Family', zh_cht: '家人',
+            },
+            friend: {
+                zh_cn: '朋友', en_us: 'Friends', zh_cht: '朋友',
+            },
+            customerNum: {
+                zh_cn: '客户编号', en_us: 'Customer Number', zh_cht: '客戶編號',
+            }
+        },
+        // 全局请求参数
+        data:{
+            pageNum: 1,
+            pageSize: 10
+        },
+        host: function(){
+            var url = '',
+                common = project.suspicious_project;
+
+            url += common.ip + ':' +common.port + common.projectName;
+
+            return url;
+        },
+        getData: function(key){
+            if(!key){
+                return '';
+            }
+            return   this.initValue[key][lang.getLang()];
+        },
+
+        //获取岗位人员数据
+        getPostData: function(roleIds){
+            var url = '/open-admin/v1/roles';
+
+            $.zAjax({
+                url: this.host({
+                    isAddprojectNameSelf:true
+                }) + url,
+                headers: project.suspicious_project.header,
+                data: globalData.data,
+                success: function(data){
+                    if(data.code == 0){
+                        var arr = [];
+                        if(roleIds){
+                            data.list.forEach( function(item){
+                                if(item.roleId != roleIds){
+                                    arr.push(item);
+                                }
+                            })
+                        }else{
+                            arr = data.list
+                        }
+
+                        $('#suspicious_role').html(globalData.getOptionList(arr, true));
+                    }
+                }
+            })
+        },
+
+        //获取人员数据
+        getStuffData: function(postData){
+            var url = '/open-admin/v1/users';
+
+            $.zAjax({
+                url: this.host({
+                    isAddprojectNameSelf: true
+                }) + url,
+                headers: project.suspicious_project.header,
+                data: {
+                    roleIds: postData,
+                    pageSize: 10,
+                    pageNum: 1
+                },
+                success: function(data){
+                    if(data.code == 0){
+                        $('#suspicious_auditor').html(globalData.getOptionList(data.list, true, 'userId', 'userName'));
+                    }
+                }
+            })
+        },
+
+        //拼接option
+        getOptionList: function(data, isChange, valueKey, nameKey){
+            valueKey = valueKey || 'roleId';
+            nameKey = nameKey || 'roleName';
+            var str=isChange?'<option value="">'+lang.getData('pleaseChoose')+'</option>':'';
+
+            data.forEach(function(item){
+                str += '<option value="'+item[valueKey]+'">'+item[nameKey]+'</option>'
+            });
+
+            return str;
+        },
+        getResultId: function(){
+            //获取字段为  SUS_RESULT
+            var currentRoleId,
+                storage = $.getUrlParams(),
+                custId = storage;
+            router = storage && storage.$router || '';
+            if(!custId){
+                // window.location.hash = '#/suspicious/screening/transview';
+                return;
+            }
+
+
+            //客户关系图是否有按钮 auto 为有按钮
+            if(router === 'auto'){
+                $('#suspicious_resultShow_OperationW').prepend(template('suspicious_resultShow_Operation', $.dataLanguage()));
+            }
+            globalData.initValue.pageData = custId;
+            globalData.initValue.custId = custId.custId;
+
+
+            //
+
+            currentRoleId = JSON.parse(sessionStorage.getItem('data')).currentRoleId;
+
+            if(currentRoleId == '1000008'){
+                $('#handleBox1').show();
+                $('#markAdjustments').show();
+                this.getConAyData('4','markAdjustments');
+                // $('#jtTitle').html('尽调岗')
+
+            }
+
+            if(currentRoleId == '1000013'){
+                $('#handleBox').show();
+                $('#markAdjustments').show();
+                this.getNoteForResult('4','markAdjustments');
+                this.getNoteForResult('3','handleBox');
+                // $('#jtTitle').html('尽调岗审批')
+
+            }
+
+            return custId;
+        },
+        //结论分析
+        getConAyData: function(type, ele){
+
+            var url = '/v1/conclusionInfos';
+            $.zAjax({
+                headers: project.suspicious_project.header,
+                url: this.host() + url,
+                type: 'GET',
+                data: {
+                    custId: globalData.initValue.custId,
+                    notBookType: type,
+                },
+                isString: false,
+                success: function(data){
+                    var res = {
+                        data: data,
+                    };
+                    $(ele).html(template('suspicious_result_conAy',res));
+                }
+            });
+
+        },
+        //查看结果
+        getResultData: function(){
+            var url = '/v1/screenLists/batchId';
+
+            $.zAjax({
+                url: this.host() + url,
+                // data:data,
+                headers: project.suspicious_project.header,
+                type: 'GET',
+                data: {
+                    custid: globalData.initValue.custId
+                },
+                isString: false,
+                success: function (data) {
+
+                    if(data){
+                        data.dataLanguage = $.dataLanguage();
+                        $('#suspicious_resultShow_resultW').html(template('suspicious_resultShow_result',data));
+                    }
+                }
+            });
+
+        },
+        //可疑特征
+        getFeatureData: function(){
+            var url = '/v1/features';
+
+            $.zAjax({
+                url: this.host() + url,
+                headers: project.suspicious_project.header,
+                success: function(data){
+
+                    var featureArr = globalData.initValue.pageData.susFeatures.split('$^$');
+
+                    for (var i=0; i<featureArr.length-1; i++) {
+                        data.data[i].checked = 1;
+                    }
+
+                    $("#suspicious_resultShow_featureW").html(template('suspicious_resultShow_feature', data))
+                }
+            })
+        },
+        //客户交易
+        getCustomerTradeData: function(){
+
+            var url = '/v1/screenListTrans';
+
+            $.zAjax({
+                url: this.host() + url,
+                data:{
+                    screenlistid: globalData.initValue.pageData.outId,
+                    trxid: ''
+                },
+                headers: project.suspicious_project.header,
+                success: function(res){
+                    var data = {
+                        list: res
+                    };
+                    $('#suspicious_result_tradeW').html(template('suspicious_result_trade',data))
+                }
+            });
+
+
+        },
+
+        //客户交易图按钮--交易链分析
+        traChainAnalysisFn: function(){
+            window.location.hash = '#/suspicious/screening/tradeChain';
+        },
+        //客户交易图按钮--社交网络分析
+        socialNetAnaFn: function(){
+
+        },
+        //客户交易图按钮--审查处理
+        reviewProcessFn: function(){
+
+            var pageData = JSON.stringify(this.initValue.pageData);
+
+            localStorage.setItem('SUS_CHECKHANDLE', pageData);
+
+            window.location.hash = '#/suspicious/screening/checkHandle';
+        },
+        //客户交易图按钮--任务分发
+        distributeTaskFn: function(id){
+            layer.closeAll();
+            id = id || '';
+            var data = {id: id, router: 'result'};
+            localStorage.setItem('SUS_WORKDIS',JSON.stringify(data));
+            window.location.hash = '#/suspicious/screening/workDistribute';
+        },
+        //客户交易图按钮--报告预览
+        previewReportFn: function(){
+            // var oid = Result.data.params.outId,
+            //     reportFormat = Result.data.params.isReport;
+            var susType = '1',
+                //susType = Result.data.detailData.susType,
+                feaSelection = '012345678910111213141516171819';
+            //feaSelection = Result.data.params.susFeatures
+
+            // var path = "http://120.79.72.116:8097/",
+            var path = this.host(),
+                oid = 1,
+                reportFormat = 1;
+            var url = path +'/v1/reportPdfs/preview?oid='+ oid +
+                '&feaSelection='+ feaSelection;
+
+            window.location.href = url;
+        },
+        //客户交易关系图数据获取
+        getRelationData: function(){
+            var url = '/v1/transMaps';
+
+            $.zAjax({
+                url: this.host() + url,
+                data: {
+                    custID: this.initValue.custId,
+                    extent: 60,
+                    dateTime: this.initValue.pageData.sdate,
+                },
+                type: 'GET',
+                headers: project.suspicious_project.header,
+                isString: false,
+                success: function(data){
+                    if(data){
+                        var result = data,
+                            chartData = globalData.buildRelationChartData(result);
+
+                        globalData.getCustInfo(chartData);
+                    }
+                }
+            });
+
+        },
+        createRelationChart: function(data, linkData){
+
+            var option = {
+                title: {
+                    text: this.getData('tradingNetTitle')
+                },
+                tooltip: {
+                    formatter: function (x) {
+                        return globalData.getData('customerNum') + "：" + x.data.custId;
+                    }
+                },
+                series: [{
+                    type: 'graph',
+                    layout: 'force',
+                    symbolSize: 50,
+                    roam: true,
+                    edgeSymbolSize: [4, 10],
+                    categories: [
+                        {
+                            name: this.getData('person')
+                        },
+                        {
+                            name: this.getData('family')
+                        },
+                        {
+                            name: this.getData('friend')
+                        }
+                    ],
+                    force: {
+                        repulsion: 1500,
+                        edgeLength: [100, 100],
+                        layoutAnimation: false,
+                    },
+                    draggable: true,
+                    itemStyle: {
+                        normal: {
+                            color: '#4b565b',
+                            opacity: 1,
+                        }
+                    },
+                    lineStyle: {
+                        normal: {
+                            width: 2,
+                            color: '#4b565b',
+                            opacity: 1,
+                        }
+                    },
+                    edgeLabel: {
+                        normal: {
+                            show: true,
+                            formatter: function (x) {
+
+                                return x.data.value;
+                            }
+                        }
+                    },
+                    label: {
+                        normal: {
+                            show: true,
+                            textStyle: {}
+                        }
+                    },
+                    data: data,
+                    links: linkData
+                }]
+            };
+
+            var echart = echarts.init(document.getElementById('suspicious_resultShow_tradingNetW'));
+
+            echart.setOption(option);
+            return option;
+        },
+        /* 组建图表数据 */
+        buildRelationChartData:function (data){
+            var  serializeJson = {}, serializelinkJson = {},baseData = [],linkData = [], dataLanguage = $.dataLanguage();
+            $.each(data, function (i, item) {
+                serializeJson = {
+                    custId: item.oppCustId,
+                    oppCustId: item.oppCustId,
+                    trxCount: item.trxCount,
+                    trxAmt: item.trxAmt,
+                    name: item.oppCustNm,
+                    category: 1,
+                    indexF: i,
+                    draggable: true,
+                    tooltip: "<p>"+ dataLanguage.customerName +"：" + item.custNm + "</p><p>"+ dataLanguage.customerNum +"：" + item.custId + "</p><p>"+dataLanguage.transactionTimes+"："+ item.trxCount +
+                        "</p><p>"+ dataLanguage.transactionSum +"：" + item.trxAmt + "</p><p>"+ dataLanguage.opponentCustomerName +"：" + item.oppCustNm +
+                        "</p><p>"+ dataLanguage.opponentCustomerNum +"：" + item.oppCustId + "</p>",
+                    des: dataLanguage.customerName+"：" + item.custNm + ";"+dataLanguage.customerNum+"：" + item.custId + ";"+dataLanguage.transactionTimes+"：" + item.trxCount +
+                        ";"+dataLanguage.transactionSum +"：" + item.trxAmt + ";"+dataLanguage.opponentCustomerName+"：" + item.oppCustNm + ";"+dataLanguage.opponentCustomerNum+"：" + item.oppCustId,
+
+                };
+                serializelinkJson = {
+                    source: 0,
+                    target: i+1,
+                    value: item.trxCount + "-" + item.trxAmt,
+                    des: dataLanguage.customerName+"：" + item.custNm + ";"+dataLanguage.customerNum+"：" + item.custId + ";"+dataLanguage.transactionTimes+"：" + item.trxCount +
+                        ";"+dataLanguage.transactionSum +"：" + item.trxAmt + ";"+dataLanguage.opponentCustomerName+"：" + item.oppCustNm + ";"+dataLanguage.opponentCustomerNum+"：" + item.oppCustId,
+
+                };
+                // linkData.push({"source": 0,"target": 0,});
+                linkData.push(serializelinkJson);
+                baseData.push(serializeJson);
+            });
+            return {baseData:baseData,linkData:linkData}
+        },
+        /* 获取当前custId的客户信息 */
+        getCustInfo:function (chartData){
+            var custInfo = {},
+                url = '/v1/custInfos',
+                dataLanguage = $.dataLanguage();
+            $.zAjax({
+                url: this.host() + url,
+                isString: false,
+                data: {
+                    custid: this.initValue.custId
+                },
+                headers: project.suspicious_project.header,
+                success:function(data){
+
+                    var result = data[0];
+                    if(!result)return;
+                    custInfo = {
+                        custId: result.custId,
+                        name: result.custNm,
+                        category: 0,
+                        draggable: true,
+                        tooltip: "<p>"+dataLanguage.customerName+"：" + result.custNm + "</p><p>"+dataLanguage.customerNum+"：" + result.custId +
+                            "</p><p>"+dataLanguage.transactionTimes+"： 0</p><p>"+ dataLanguage.transactionSum +"：0</p><p>"+dataLanguage.opponentCustomerName+"：" + result.lgpsonCustNm +
+                            "</p><p>"+dataLanguage.opponentCustomerNum+"：" + result.lgpsonCustId + "</p>",
+                        des: dataLanguage.customerName + "：" + result.custNm + ";"+dataLanguage.customerNum+"：" + result.custId +
+                            ";"+dataLanguage.transactionTimes+"：0;"+dataLanguage.transactionSum+"：0;"+ dataLanguage.opponentCustomerName+"："+ result.lgpsonCustNm + ";"+dataLanguage.opponentCustomerNum+"："+ result.lgpsonCustId,
+                        itemStyle: {
+                            normal: {
+                                color: "red",
+                                opacity: 1,
+                            }
+                        }
+                    };
+
+                    chartData.baseData.unshift(custInfo);
+                    globalData.createRelationChart(chartData.baseData,chartData.linkData);
+                }
+            });
+            return custInfo
+        },
+
+        //保存
+        save: function(){
+            var url = '/v1/distributeJournals/set';
+
+        },
+        //退回
+        returnBtnFn: function(){
+
+            var url = '/v1/distributeJournals/return',
+                tips = $.dataLanguage();
+                btn = [lang.getData('confirm'), lang.getData('cancel')];
+
+            layer.confirm(tips.returnConfirm, {
+                btn: btn
+            }, function(){
+                $.zAjax({
+                    url: globalData.host() + url,
+                    headers: project.suspicious_project.header,
+                    data: {
+                        screentId: globalData.initValue.pageData.outId,
+                        userId: JSON.parse(sessionStorage.getItem('data')).user.userId
+                    },
+                    success: function(data){
+                        if(data.code == 0){
+                            layer.msg(tips.returnTips, {icon: 1});
+                            setTimeout(function(){
+                                window.history.go(-1);
+                            }, 2500)
+                        }
+                    }
+                })
+            }, function(){
+
+            })
+
+        },
+        init: function(){
+            $('#main').prepend(template('suspicious_approval',$.dataLanguage()));
+            this.getResultId();
+
+            //查看结果
+            this.getResultData();
+
+            //客户关系图
+            this.getRelationData();
+
+            //客户交易
+            this.getCustomerTradeData();
+
+            //特征
+            this.getFeatureData();
+
+            this.event();
+
+        },
+        event: function(){
+            //岗位选择
+            $('#suspicious_role').change(function () {
+                var roleId = $(this).val();
+                if(roleId != '1000008' &&  roleId != '1000013'){
+                    layer.msg(globalData.getDataValue('distributionTips'), {icon: 2});
+                    $(this).val('');
+                    return;
+                }
+                if(roleId === '1000008'){
+                    $('.suspicious_transviewBox').children().eq(2).show().children('textarea').attr('disabled',false);
+                }
+                else{
+                    $('.suspicious_transviewBox').children().eq(2).hide().children('textarea').attr('disabled',true);
+                }
+
+
+                //获取人员列表
+                globalData.getStuffData(roleId);
+
+            });
+        }
+    };
+
+    $(document).ready(function(){
+
+        globalData.init();
+    })
+</script>

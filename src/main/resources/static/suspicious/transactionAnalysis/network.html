@@ -1,0 +1,291 @@
+<!--风险量化查证-->
+
+<script type="text/html" id="suspicious_network">
+<div class="suspicious_pages">
+    <div class="panel panel-lined">
+        <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i><span>{{result}}</span></div>
+        <div class="panel-body" id="suspicious_riskQuantification_listW">
+
+        </div>
+    </div>
+    <!--初筛交易列表-->
+    <div class="panel panel-lined mb30">
+        <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{transList}}</div>
+        <div class="panel-body" id="searchData">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">{{beginDate}}</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control field" id="beginDate" placeholder={{beginDate}} name="beginDate" value=""/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">{{endDate}}</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control field" id="endDate" name="endDate" placeholder="{{endDate}}" value=""/>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="col-md-4 control-label">{{status}}</label>
+                    <div class="col-md-8">
+                        <select name="report" class="form-control field" id="transListStatus">
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <div style="width:185px;">
+                            <span id="searchBtn" class="btn btn-primary pull-left fa fa-search" onclick="globalData.searchFn()">{{search}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <table class="table table-bordered table-striped zCheckBox">
+                <thead class="thead">
+                <tr>
+                    <th>{{findDate}}</th>
+                    <th>{{susNum}}</th>
+                    <th>{{customerName}}</th>
+                    <th>{{customerNum}}</th>
+                    <th>{{customerType}}</th>
+                    <th>{{affiliate}}</th>
+                    <th>{{doubtfulDegree}}</th>
+                    <th>{{transactionTimes}}</th>
+                    <th>{{opponentNum}}</th>
+                    <th>{{listStatus}}</th>
+                    <th>{{majorCase}}</th>
+                    <th>{{operation}}</th>
+                </tr>
+                </thead>
+                <tbody id="suspicious_transviewTbody">
+                <tr>
+                    <td colspan="20" style="text-align: center;">{{loading}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <!-- #end data table -->
+            <!-- 分页 -->
+            <div class="page">
+                <div class="pager_container" id="Pagination">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+
+<script type="text/html" id="suspicious_riskQuantification_list">
+    <table class="table suspicious_result_consAy border-top-none">
+        <tbody>
+        <tr>
+            <td>{{dataLanguage.timeInternal}}</td><td>{{timeInternal}}</td><td>{{dataLanguage.beforeCustomerCount}}</td>
+            <td>{{beforeCustomerCount}}</td><td>{{dataLanguage.afterCustomerCount}}</td><td>{{afterCustomerCount}}</td>
+        </tr>
+        <tr>
+            <td>{{dataLanguage.sumAmount}}</td><td>{{sumAmount}}</td><td>{{dataLanguage.trxCount}}</td>
+            <td>{{trxCount}}</td><td>{{dataLanguage.susTypeCount}}</td><td>{{susTypeCount}}</td>
+        </tr>
+        <tr><td>{{dataLanguage.totalCount}}</td><td>{{totalCount}}</td><td>{{dataLanguage.bankName}}</td><td>{{bankName}}</td><td>{{dataLanguage.deptName}}</td><td>{{deptName}}</td></tr>
+
+        </tbody>
+    </table>
+</script>
+
+<!-- 模板引擎动态生成表格数据 -->
+<script id="suspicious_transviewTable" type="text/html">
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td>{{value.sdate}}</td>
+        <td>{{value.susNum}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custType}}</td>
+        <td>{{value.bankName}}</td>
+        <td>{{value.susRate}}</td>
+        <td>{{value.trxCount}}</td>
+        <td>{{value.trxOppCount}}</td>
+        <td>{{value.isReport | getParamsStatus :'suspiciousTransList'}}</td>
+        <td>{{value.isSerious | getParamsStatus :'isStatus'}}</td>
+        <td style="min-width: 100px;">
+            <span class="btn btn-sm btn-warning detailBtn fa fa-edit hoverBtn" name='详情' btnType='list' onclick="globalData.listBtnFn('{{value.custId}}')"></span>
+        </td>
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="17" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<script>
+
+    var globalData = {
+        initValue: {
+            userId: JSON.parse(sessionStorage.getItem('data')).user.userId,
+        },
+        // 全局请求参数
+        data:{
+            pageNum: 1,
+            pageSize: 10
+        },
+        host: function(){
+            var url = '',
+                common = project.suspicious_project;
+
+            url += common.ip + ':' +common.port + common.projectName;
+
+            return url;
+        },
+
+        // 可疑网络展示
+        getRiskQuData: function(data){
+            var url = '/v1/screenLists/brainSummary';
+
+            $.zAjax({
+                url:  this.host() + url,
+                type: 'get' ,
+                data: {
+                    userid: JSON.parse(sessionStorage.getItem('data')).user.userId,
+                    // userid: -1,
+                    report: '-1'
+                },
+                headers: project.suspicious_project.header,
+                success: function(res){
+                    res.dataLanguage = $.dataLanguage();
+
+                    $('#suspicious_riskQuantification_listW').html(template('suspicious_riskQuantification_list', res));
+                }
+            });
+
+        },
+
+        //獲取交易列表表格數據
+        getData: function(pageData){
+
+            $.zCompositeData(common_params['rbac']['suspiciousTransList'],'#searchData [name = "report"]',false);
+
+            var url = this.host() + '/v1/screenLists';
+
+            pageData = pageData || globalData.data ;
+
+            $.zAjax({
+                url: url,
+                headers: project.suspicious_project.header,
+                data: pageData,
+                isString: false,
+                success: function(data){
+                    var res = {
+                        list: data.list,
+                        pageInfo: {
+                            pageSize: data.pageSize,
+                            pageNum: data.pageNum,
+                            total: data.total
+                        }
+                    };
+                    var total = data.total;
+                    globalData.initValue.transListData = data;
+                    $.zPageMethod({
+                        headers: project.suspicious_project.header,
+                        page:'#Pagination',
+                        url: url ,
+                        tp:'suspicious_transviewTable',
+                        ele:'#suspicious_transviewTbody',
+                        total:total,
+                        data:pageData,
+                        list:res,
+                        success: function(data){
+                            globalData.initValue.transListData = data;
+                        }
+                    });
+                }
+            });
+
+        },
+        //筛选
+        searchFn: function(){
+
+            var data=$.zSearchFn({},'#searchData .field');
+
+            data = $.extend(data, {userid: globalData.initValue.userId});
+            globalData.getRiskQuData(data);
+
+            data = $.extend(globalData.data, data);
+
+            globalData.getData(data);
+
+        },
+
+        //查看
+        listBtnFn: function(custId){
+            var postData,
+                item = '',
+                listData = globalData.initValue.transListData.list,
+                postObj = {},
+                url = '';
+
+            for(var i = 0; i < listData.length ; i++){
+                if(listData[i].custId == custId){
+                    postObj = listData[i];
+                    break;
+                }
+            }
+
+            url = $.builderUrl('#/suspicious/screening/result', postObj);
+
+            //跳转
+            layer.closeAll();
+            window.location.hash = url;
+
+        },
+        init: function(){
+            var startLayDate, endLayDate;
+            // 调用日期插件
+            startLayDate = laydate.render({
+                elem: '#beginDate',
+                lang:$.getLayDateLang(),
+                done: function(value, date, endDate){
+                    endLayDate.config.min = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+            endLayDate = laydate.render({
+                elem: '#endDate',
+                lang:$.getLayDateLang(),
+                done: function(value, date, endDate){
+                    startLayDate.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+
+            $("#main").prepend(template('suspicious_network', $.dataLanguage()));
+
+            this.getRiskQuData();
+            this.getData();
+            this.event();
+        },
+
+        event: function(){
+        },
+    };
+
+    $(document).ready(function(){
+        globalData.init();
+    })
+</script>

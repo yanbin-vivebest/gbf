@@ -1,0 +1,15 @@
+server:
+  port: 8082
+  context-path: /banking-aml-web
+spring:
+  application:
+    name: banking-aml-web
+  cloud:
+    consul:
+      host: 192.168.101.21
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+        health-check-path: ${server.context-path}/health
+        instance-id: ${spring.application.name}-${spring.cloud.client.ipAddress}

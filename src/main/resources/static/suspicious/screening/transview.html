@@ -1,0 +1,537 @@
+<!--初筛交易查看-->
+
+<script id="suspicious_transview" type="text/html">
+    <div id="suspicious" class="suspicious">
+        <!--数据统计-->
+        <div class="panel panel-lined mb30">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{dataStatistics}}</div>
+            <div class="panel-body" id="suspicious_transview_statisticsW">
+                <!--<table id="totalBox" class="col-md-12">-->
+                    <!--<tbody data-template>-->
+                    <!--<tr>-->
+                        <!--<td>{{distributed}}:</td>-->
+                        <!--<td>{{tune}}: </td>-->
+                        <!--<td>{{checked}}: </td>-->
+                        <!--<td>{{approval}}: </td>-->
+                    <!--</tr>-->
+                    <!--</tbody>-->
+                <!--</table>-->
+            </div>
+        </div>
+        <!--初筛交易列表-->
+        <div class="panel panel-lined mb30">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{transList}}</div>
+            <div class="panel-body" id="searchData">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label ">{{beginDate}}</label>
+                        <div class="col-md-7">
+                            <input type="text" class="form-control field" id="beginDate" placeholder={{beginDate}} name="beginDate" value=""/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label">{{endDate}}</label>
+                        <div class="col-md-7">
+                            <input type="text" class="form-control field" id="endDate" name="endDate" placeholder="{{endDate}}" value=""/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="col-md-4 control-label">{{status}}</label>
+                        <div class="col-md-8">
+                            <select name="report" class="form-control field" id="transListStatus">
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <div style="width:185px;">
+                                <span id="searchBtn" class="btn btn-primary pull-left fa fa-search">{{search}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped zCheckBox">
+                    <thead class="thead">
+                    <tr>
+                        <th>{{findDate}}</th>
+                        <th>{{susNum}}</th>
+                        <th>{{customerName}}</th>
+                        <th>{{customerNum}}</th>
+                        <th>{{customerType}}</th>
+                        <th>{{affiliate}}</th>
+                        <th>{{doubtfulDegree}}</th>
+                        <th>{{transactionTimes}}</th>
+                        <th>{{opponentNum}}</th>
+                        <th>{{listStatus}}</th>
+                        <th>{{majorCase}}</th>
+                        <th>{{operation}}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="suspicious_transviewTbody">
+                    <tr>
+                        <td colspan="20" style="text-align: center;">{{loading}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <!-- #end data table -->
+                <!-- 分页 -->
+                <div class="page">
+                    <div class="pager_container" id="Pagination">
+                    </div>
+                </div>
+        </div>
+    </div>
+    <div id="dataView" style = "width: 580px">
+        {{include 'suspicious_transviewWrap'}}
+    </div>
+</div>
+</script>
+
+<!--数据统计-->
+<script type="text/html" id="suspicious_transview_statistics">
+    <div class="col-md-12">
+        <div class="col-md-3 pd-1rem col-sm-6">{{dataLanguage && dataLanguage.claimCount}}: {{unclaimedCount || 0}}</div>
+        <div class="col-md-3 pd-1rem col-sm-6">{{dataLanguage && dataLanguage.unTurnUpCount}}: {{unTurnUpCount || 0}}</div>
+        <div class="col-md-3 pd-1rem col-sm-6">{{dataLanguage && dataLanguage.unAuditedCount}}: {{unAuditedCount || 0}}</div>
+        <div class="col-md-3 pd-1rem col-sm-6">{{dataLanguage && dataLanguage.unApprovedCount}}: {{unApprovedCount || 0}}</div>
+    </div>
+</script>
+
+<!-- 模板引擎动态生成表格数据 -->
+<script id="suspicious_transviewTableS" type="text/html">
+    {{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td>{{value.sdate}}</td>
+        <td>{{value.susNum}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custType}}</td>
+        <td>{{value.bankName}}</td>
+        <td>{{value.susRate}}</td>
+        <td>{{value.trxCount}}</td>
+        <td>{{value.trxOppCount}}</td>
+        <td>{{value.isReport | getParamsStatus :'suspiciousTransList'}}</td>
+        <td>{{value.isSerious | getParamsStatus :'isStatus'}}</td>
+        <td style="min-width: 100px;">
+            <span class="btn btn-sm btn-warning detailBtn fa fa-edit hoverBtn" name='查证认定' btnType='verification' onclick="globalData.listBtnFn('{{value.custId}}')"></span>
+            {{if value.status == 1}}
+            <span class="btn btn-sm btn-info addBtn fa fa-tags hoverBtn" name='派发' btnType='distribute' onclick="globalData.distributeBtnFn('{{value.custId}}','{{value.outId}}')"></span>
+            {{/if}}
+
+            {{if value.status == 0}}
+            <span class="btn btn-sm btn-danger exportBtn fa fa-trash-o hoverBtn" name='领取' btnType='receive' onclick="globalData.receiveBtnFn('{{value.susNum}}')"></span>
+
+            {{/if}}
+        </td>
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="17" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<!--弹窗-->
+<script id="suspicious_transviewWrap" type="text/html">
+    <div class="suspicious_transviewBox">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{post}}： </label>
+                <div class="col-md-8">
+                    <select name="status" class="form-control field" id="suspicious_role">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class=" col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{stuff}}： </label>
+                <div class="col-md-8">
+                    <!--<input  maxlength="30" type="text" class="form-control field fieldReadOnly" name="auditor" placeholder="{{11}} " value=""/>-->
+                    <select name="auditor" class="form-control field" id="suspicious_auditor">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{matter}}： </label>
+                <div class="col-md-8">
+                    <textarea class="form-control field fieldReadOnly" name="content" id="suspicious_matter"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script>
+
+    var globalData = {
+        initValue: {
+
+            distributionTask: {
+                zh_cn: '任务派发', en_us: 'Distribution Task',zh_cht:'任務派發',
+            },
+            distributionTips1: {
+                zh_cn: '派发成功', en_us: 'Distribution Successfully!',zh_cht:'派發成功',
+            },
+            distributionTips: {
+                zh_cn: '当前只可以选择管户尽调岗或者管户尽调审核岗!', en_us: 'You can only chose Management and protection audit or Management and protection!', zh_cht: '當前只可以選擇管護盡調崗或者管護盡調審核崗!'
+            },
+            receiveTips: {
+                zh_cn: '确认领取可疑编号为<span style="font-size:16px;color:#f00">$num$</span>的数据吗？', en_us: 'Do you confirm the data with the collection number <span style="font-size:16px;color:#f00">$num$</span>?',zh_cht: '確認領取可疑編號為<span style="font-size:16px;color:#f00">$num$</span>的數據嗎？'
+            }
+        },
+        // 全局请求参数
+        data:{
+            pageNum: 1,
+            pageSize: 10
+        },
+        host: function(obj){
+
+            var url = '',
+                common = project.suspicious_project,
+                projectName = common.projectName;
+
+            //如果接口项目不包括
+            if(obj && obj.isAddprojectNameSelf){
+                projectName = '';
+            }
+
+            url += common.ip + ':' +common.port + projectName;
+
+            return url;
+        },
+        getDataValue: function(key){
+            if(!key){
+                return '';
+            }
+            return   this.initValue[key][lang.getLang()];
+        },
+
+        init: function(){
+
+            var startLayDate, endLayDate;
+
+            $('#main').prepend(template('suspicious_transview',$.dataLanguage()));
+
+            this.getDataView();
+
+            $.zCompositeData(common_params['rbac']['suspiciousTransList'],'#searchData [name = "report"]',false);
+
+            // 调用日期插件
+            startLayDate = laydate.render({
+                elem: '#beginDate',
+                lang:$.getLayDateLang(),
+                done: function(value, date, endDate){
+                    endLayDate.config.min = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+            endLayDate = laydate.render({
+                elem: '#endDate',
+                lang:$.getLayDateLang(),
+                done: function(value, date, endDate){
+                    startLayDate.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+            this.getData();
+
+            this.getPostData();
+            //事件
+            this.event();
+
+        },
+        // 數據統計
+        getDataView: function(data){
+            //数据统计数据获取
+            data = data || '';
+            var url = '/v1/screenLists/summary/status';
+
+            $.zAjax({
+                url: this.host() + url,
+                data:data,
+                headers: project.suspicious_project.header,
+                success: function (data) {
+                    data = data.data;
+
+                    data.dataLanguage = $.dataLanguage();
+                    $('#suspicious_transview_statisticsW').html(template('suspicious_transview_statistics',data));
+                },
+                error: function(){
+                    var data = {
+
+                    } ;
+                    data.dataLanguage = $.dataLanguage();
+                    $('#suspicious_transview_statisticsW').html(template('suspicious_transview_statistics',data));
+                }
+            });
+
+        },
+
+        //獲取交易列表表格數據
+        getData: function(pageData){
+            var url = this.host() + '/v1/screenLists';
+
+            pageData = pageData || globalData.data;
+
+            $.zAjax({
+                url: url,
+                headers: project.suspicious_project.header,
+                data: pageData,
+                isString: false,
+                success: function(data){
+                    var total = data.pageInfo && data.pageInfo.total;
+                    globalData.initValue.transListData = data;
+                    $.zPageMethod({
+                        headers: project.suspicious_project.header,
+                        page:'#Pagination',
+                        url: url ,
+                        tp:'suspicious_transviewTableS',
+                        ele:'#suspicious_transviewTbody',
+                        total:total,
+                        data:pageData,
+                        list:data,
+                        success: function(data){
+                            globalData.initValue.transListData = data;
+                        }
+                    });
+                }
+            });
+
+        },
+
+        //获取岗位人员数据
+        getPostData: function(roleIds){
+            var url = '/open-admin/v1/roles';
+
+            $.zAjax({
+                url: this.host({
+                    isAddprojectNameSelf:true
+                }) + url,
+                headers: project.suspicious_project.header,
+                data: globalData.data,
+                success: function(data){
+                    if(data.code == 0){
+                        var arr = [];
+                        if(roleIds){
+                            data.list.forEach( function(item){
+                                if(item.roleId != roleIds){
+                                    arr.push(item);
+                                }
+                            })
+                        }else{
+                            arr = data.list
+                        }
+
+                        $('#suspicious_role').html(globalData.getOptionList(arr, true));
+                    }
+                }
+            })
+        },
+
+        //获取人员数据
+        getStuffData: function(postData){
+            var url = '/open-admin/v1/users';
+
+            $.zAjax({
+                url: this.host({
+                    isAddprojectNameSelf: true
+                }) + url,
+                headers: project.suspicious_project.header,
+                data: {
+                    roleIds: postData,
+                    pageSize: 10,
+                    pageNum: 1
+                },
+                success: function(data){
+                    if(data.code == 0){
+                        $('#suspicious_auditor').html(globalData.getOptionList(data.list, true, 'userId', 'userName'));
+                    }
+                }
+            })
+        },
+
+        //拼接option
+        getOptionList: function(data, isChange, valueKey, nameKey){
+            valueKey = valueKey || 'roleId';
+            nameKey = nameKey || 'roleName';
+            var str=isChange?'<option value="">'+lang.getData('pleaseChoose')+'</option>':'';
+
+            data.forEach(function(item){
+                str += '<option value="'+item[valueKey]+'">'+item[nameKey]+'</option>'
+            });
+
+            return str;
+        },
+        //派发
+        distributeBtnFn: function(custId, outId){
+            var title = globalData.getDataValue('distributionTask');
+            globalData.updateView(title, this, custId, outId);
+        },
+        //表单事件
+        updateView: function(title, self, custId, outId){
+            var _id=$(self).closest('tr').attr("_id") || '11';
+
+            $.zUpdateView(title, self, _id, '#dataView', globalData.upDateViewFn, {
+                //派发
+                edit: function(data){
+                    //ajax
+                    var url  = '/v1/distributeJournals/set';
+
+                    $.zAjax({
+                        url: globalData.host() + url,
+                        headers: project.suspicious_project.header,
+                        type: 'post',
+                        data: {
+                            operator: JSON.parse(sessionStorage.getItem('data')).user.userId,
+                            auditor: $('#suspicious_auditor').val(),
+                            custId: custId,
+                            roleId: $('#suspicious_role').val(),
+                            noteBookType: '4',
+                            content: $('#suspicious_matter').val(),
+                            screentId: outId,
+                        },
+                        success: function(data){
+                            if(data.code == 0){
+                                layer.closeAll();
+                                layer.msg(globalData.getDataValue('distributionTips1'),{icon:1});
+
+                                //更新
+                                globalData.getDataView();
+                                globalData.getData();
+                            }
+                        }
+                    });
+
+                }
+            })
+        },
+        upDateViewFn: function(id, ele, fn, self){
+
+            var roleIds = JSON.parse(sessionStorage.getItem('data')).user.roleIds;
+            globalData.getPostData(roleIds);
+
+            fn && fn();
+        },
+        //表格领取按钮事件
+        receiveBtnFn: function(susNum){
+            // console.log(item);
+            var btn = [lang.getData('confirm'), lang.getData('cancel')],
+                tips = this.getDataValue('receiveTips').replace('$num$', susNum),
+                userId = JSON.parse(sessionStorage.getItem('data')).user.userId,
+                url = this.host() + '/v1/distributeJournals/receive';
+
+            //n  编号
+            var index = layer.confirm(tips,{
+                btn: btn
+            }, function(){
+                var data = {
+                    userId: userId,
+                    susNum: susNum,
+                };
+                //ajax
+                $.zAjax({
+                    url:  url,
+                    type: 'PUT' ,
+                    data: data,
+                    header: project.suspicious_project.header,
+                    success: function(){
+                        // layer.msg(globalData.getData('distributionTips'), {icon: 1});
+
+                        //更新表单
+                        globalData.getData();
+
+                        //更新数据统计
+                        globalData.getDataView();
+
+                        layer.closeAll();
+                    }
+                });
+
+            }, function(){
+                layer.closeAll();
+            })
+        },
+        //查看
+        listBtnFn: function(custId){
+            var postData,
+                item = '',
+                listData = globalData.initValue.transListData.list,
+                postObj = {},
+                url = '';
+
+            for(var i = 0; i < listData.length ; i++){
+                if(listData[i].custId == custId){
+                    postObj = listData[i];
+                    break;
+                }
+            }
+
+            url = $.builderUrl('#/suspicious/screening/result', postObj);
+
+            //跳转
+            layer.closeAll();
+            window.location.hash = url;
+
+        },
+        event: function(){
+            //搜索按鈕事件
+            $("#searchBtn").click(function(){
+                var data=$.zSearchFn({},'#searchData .field');
+
+                globalData.getDataView(data);
+
+                data = $.extend(globalData.data, data);//合并页面数据
+                globalData.getData(data);
+            });
+
+            //表格领取按钮事件
+
+            //岗位选择
+            $('#suspicious_role').change(function () {
+                var roleId = $(this).val();
+                if(roleId != '1000008' &&  roleId != '1000013'){
+                    layer.msg(globalData.getDataValue('distributionTips'), {icon: 2});
+                    $(this).val('');
+                    return;
+                }
+                if(roleId === '1000008'){
+                    $('.suspicious_transviewBox').children().eq(2).show().children('textarea').attr('disabled',false);
+                }
+                else{
+                    $('.suspicious_transviewBox').children().eq(2).hide().children('textarea').attr('disabled',true);
+                }
+
+
+                //获取人员列表
+                globalData.getStuffData(roleId);
+
+            });
+        }
+
+    };
+
+    $(document).ready(function(){
+        globalData.init();
+    })
+</script>

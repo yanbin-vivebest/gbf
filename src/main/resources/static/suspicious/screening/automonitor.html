@@ -1,0 +1,1044 @@
+<!--智能检测结果-->
+<style type="text/css">
+    .suspicious_pages {
+        overflow: hidden;
+        padding-bottom: 30px;
+    }
+
+    .center {
+        width: 100%;
+        text-align: center;
+    }
+
+    .relative {
+        position: relative;
+    }
+
+    textarea {
+        min-height: 80px;
+        padding-bottom: 15px !important;
+    }
+
+    .textarealen {
+        font-size: 10px;
+        position: absolute;
+        right: 18px;
+        bottom: 0px;
+        transform: scale(.8);
+        -ms-transform: scale(.8);
+        /* IE 9 */
+        -webkit-transform: scale(.8);
+        /* Safari 和 Chrome */
+        -o-transform: scale(.8);
+        /* Opera */
+        -moz-transform: scale(.8);
+        /* Firefox */
+        color: #000;
+    }
+
+    .textarealen:after {
+        content: "\/500";
+        font-size: 10px;
+        color: #000;
+    }
+</style>
+<script type="text/html" id="suspicious_autoMonitor">
+    <!-- 查询表单+搜索重置导出按钮组 -->
+    <div class="suspicious_pages" id="suspicious_autoMonitor">
+        <div class="panel panel-lined">
+            <div class="panel-header panel-header-suspicious"><i class="fa fa-user"></i>{{listTitle}}</div>
+            <div class="panel-body">
+                <!-- 表单 -->
+                <div class="panel-body" id="searchData">
+                    <!-- 客户号 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{customerNum}}</label>
+                            <div class="col-md-8">
+                                <input type="password" style="display:none" value="" />
+                                <input type="text" class="form-control field" name="custNo" placeholder={{customerNum}}
+                                    value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 客户名称 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{customerName}}</label>
+                            <div class="col-md-8">
+                                <input type="password" style="display:none" value="" />
+                                <input type="text" class="form-control field" name="custName" placeholder={{customerName}}
+                                    value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 机构号 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{orgNo}}</label>
+                            <div class="col-md-8">
+                                <input type="password" style="display:none" value="" />
+                                <input type="text" class="form-control field" name="orgNo" placeholder={{orgNo}} value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 开始日期 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{beginDate}}</label>
+                            <div class="col-md-8">
+                                <input type="password" style="display:none" value="" />
+                                <input type="text" class="form-control field dateClass" id="beginDate"
+                                    placeholder={{beginDate}} name="beginDate" value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 截止日期 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{endDate}}</label>
+                            <div class="col-md-8">
+                                <input type="password" style="display:none" value="" />
+                                <input type="text" class="form-control field dateClass" id="endDate" autocomplete="off"
+                                    name="endDate" placeholder="{{endDate}}" value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 状态 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{status}}</label>
+                            <div class="col-md-8">
+                                <select name="screentStatus" class="form-control field" id="transListStatus"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 可疑编号 -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="col-md-4 control-label">{{suspiciousNum}}</label>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control field" name="suspiciousNum"
+                                    placeholder={{suspiciousNum}} value="" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 搜索重置导出按钮组 -->
+                <div class="col-md-12" style="text-align:center;">
+                    <span id="searchBtn" class="btn btn-primary fa fa-search">{{search}}</span>
+                    <span id="resetBtn" class="btn btn-warning fa fa-refresh">{{reset}}</span>
+                    <span onclick="globalData.upload()" class="btn btn-success fa fa-download">导出</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 查询结果表格 -->
+    <div class="">
+        <table class="table table-bordered table-striped zCheckBox">
+            <thead class="thead">
+                <tr>
+                    <th>{{findDate}}</th>
+                    <th>{{suspiciousNum}}</th>
+                    <th>{{customerName}}</th>
+                    <th>{{customerNum}}</th>
+                    <th>{{customerType}}</th>
+                    <th>{{bankNo}}</th>
+                    <th>{{bankName}}</th>
+                    <th>{{suspiciousRate}}</th>
+                    <th>{{cardId}}</th>
+                    <th>{{kyc}}</th>
+                    <th>{{status}}</th>
+                    <!-- <th>{{majorCase}}</th> -->
+                    <!-- <th>{{degress}}</th> -->
+                    <th>{{operation}}</th>
+                </tr>
+            </thead>
+            <tbody id="suspicious_autoMonitorTbodyW">
+                <tr>
+                    <td colspan="20" style="text-align: center;">{{loading}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- 分页按钮组 -->
+        <div class="page">
+            <div class="pager_container" id="Pagination">
+            </div>
+        </div>
+    </div>
+    <!-- 未知 -->
+    <div id="dataView" style="width:400px;">
+        {{include 'suspicious_chooseTimeWrap'}}
+    </div>
+</script>
+
+<!--智能检测列表-->
+<script type="text/html" id="suspicious_autoMonitorTbody">
+	{{if list && list.length > 0 }}
+    {{each list as value i}}
+    <tr _id="{{value.id}}">
+        <td>{{value.sdate}}</td>
+        <td style="max-width: 150px;">{{value.susNum}}</td>
+        <td>{{value.custNm}}</td>
+        <td>{{value.custId}}</td>
+        <td>{{value.custTypeText || value.custType}}</td>
+        <td>{{value.orgNo}}</td>
+        <td>{{value.orgName||trimStr}}</td>
+        <td>
+			{{value.susRate}}
+			{{susRateFormat(value.susRate)}}
+		</td>
+        <td>{{value.cardId}}</td>
+        <td>{{value.kyc}}</td>
+        <td>{{value.screentStatus | getParamsStatus :'suspiciousTransList'}}</td>
+        <!-- <td>{{value.isSerious | getParamsStatus :'isStatus'}}</td> -->
+        <!-- <td>{{value.status | susDegress}}</td> -->
+        <td style="min-width: 100px;">
+           <!--  <span class="btn btn-sm btn-warning detailBtn fa fa-edit hoverBtn hideBtn" name='分析' btnType="analysis" onclick="globalData.chooseTimeWrap('{{value.custId}}')"></span> -->
+            {{if value.operatorName}}
+                {{value.status | btnSet: value.custId, value.sdate, value.operatorName}}
+            {{else}}
+                {{value.status | btnSet: value.custId, value.sdate}}
+            {{/if}}
+            
+           <!--  {{1 | btnSet: value.custId, value.sdate}}
+            {{2 | btnSet: value.custId, value.sdate, value.operator}} -->
+        </td>
+    </tr>
+    {{/each}}
+    {{else}}
+    <tr>
+        <td colspan="17" style="text-align: center;">{{1 | noData}}</td>
+    </tr>
+    {{/if}}
+</script>
+
+<!--弹窗-->
+<script type="text/html" id="suspicious_chooseTimeWrap">
+	<div class="col-md-12">
+        <div class="form-group">
+            <label class="col-md-4 control-label required">{{timeSpace}}： </label>
+            <div class="col-md-8">
+                <select name="status" class="form-control field" id="suspicious_time">
+
+                </select>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<script id="suspicious_transviewWrap" type="text/html">
+	<div class="suspicious_transviewBox" style="width:auto; height: auto;">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{post}}： </label>
+                <div class="col-md-8">
+                    <select name="status" class="form-control field" id="suspicious_role">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{stuff}}： </label>
+                <div class="col-md-8">
+                    <select name="auditor" class="form-control field" id="suspicious_auditor">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-md-4 control-label required">{{matter}}： </label>
+                <div class="col-md-8 relative">
+                    <textarea class="form-control field fieldReadOnly" name="content" id="suspicious_matter" maxlength="500"></textarea>
+                    <i class="textarealen">0</i>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script>
+    template.helper('btnSet', function (current_status, item, sdate, operator) {
+        operator = operator || '';
+
+        var currentRoleId = sessionStorage.getItem('data') && JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+            btnStr = '';
+
+        // 智能检测列表下，操作列的按钮
+        var btnTotalDatas = {
+            // 认领按钮
+            'rl': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-success detailBtn fa fa-envelope-open-o hoverBtn hideBtn" name="认领" btnType="claim" onclick="globalData.optionBtns.claimBtn(\'' +
+                        item + '\', \'' + sdate + '\')"></span>')
+                }
+            },
+            // 派发按钮
+            'pf': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-warning detailBtn fa fa-gift hoverBtn hideBtn" name="派发" btnType="distribute" onclick="globalData.optionBtns.distributeBtn(\'' +
+                        item + '\', \'' + sdate + '\')"></span>')
+                }
+            },
+            // 查证按钮
+            'cz': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-danger detailBtn fa fa-check hoverBtn hideBtn" name="查证" btnType="verification" onclick="globalData.optionBtns.verificationBtn(\'' +
+                        item + '\', \'' + sdate + '\')"></span>')
+                }
+            },
+            // 查看按钮
+            'ck': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-info detailBtn fa fa-list hoverBtn hideBtn" name="查看" btnType="check" onclick="globalData.optionBtns.listBtn(\'' +
+                        item + '\', \'' + sdate + '\')"></span>')
+                }
+            },
+            // 尽调按钮
+            'jd': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-danger detailBtn fa fa-map hoverBtn hideBtn" name="尽调" btnType="investigation" onclick="globalData.optionBtns.investigation(\'' +
+                        item + '\', \'' + sdate + '\')"></span>');
+                }
+            },
+            // 审定按钮
+            'sp': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-danger detailBtn fa fa-envelope-square hoverBtn hideBtn" name="审定" btnType="approval" onclick="globalData.optionBtns.approval(\'' +
+                        item + '\', \'' + sdate + '\')"></span>');
+                }
+            },
+            // 复核按钮
+            'sh': {
+                btn: function (item, sdate) {
+                    return (
+                        '<span class="btn btn-sm btn-danger detailBtn fa fa-crosshairs hoverBtn hideBtn" name="复核" btnType="auditing" onclick="globalData.optionBtns.auditing(\'' +
+                        item + '\', \'' + sdate + '\')"></span>');
+                }
+            }
+
+        }
+        /**
+         * 通过（状态/status/current_status)判断生成哪种按钮
+         * 未分配：null
+         * 待处理：1
+         * 不可疑：10
+         * 可疑  ：8
+         */
+        // 判断是否是未分配，是则生成（认领）按钮
+        if (current_status == null) {
+            btnStr = btnTotalDatas['rl'].btn(item, sdate);
+            return btnStr;
+        }
+        // 判断是否是待处理
+        if (current_status == 1) {
+            if (JSON.parse(sessionStorage.getItem('data')).user.userId == operator) {
+                btnStr = btnTotalDatas['cz'].btn(item, sdate);  // 查证按钮
+            } else {
+                btnStr = btnTotalDatas['ck'].btn(item, sdate);  // 查看按钮
+            }
+            return btnStr;
+        }
+        // current_status不为空，但是又不等于1，即可疑和不可疑，就生成（查看）按钮
+        if (current_status != null && current_status != 1) {
+            btnStr = (btnTotalDatas['ck'].btn(item, sdate));
+            return btnStr;
+        }
+    })
+
+    var globalData = {
+        initValue: {
+            reportList: {
+                zh_cn: '上报数据列表',
+                en_us: 'List of reported data',
+                zh_cht: '上報數據列表',
+            },
+            timeWrapTitle: {
+                zh_cn: '数据时段选择',
+                en_us: 'Data time interval selection',
+                zh_cht: '數據時段選擇',
+            },
+            distributionTask: {
+                zh_cn: '任务派发',
+                en_us: 'Distribution Task',
+                zh_cht: '任務派發',
+            },
+            distributionTips1: {
+                zh_cn: '派发成功',
+                en_us: 'Distribution Successfully!',
+                zh_cht: '派發成功',
+            },
+            distributionTips: {
+                zh_cn: '当前只可以选择管户尽调岗或者管户尽调审核岗!',
+                en_us: 'You can only chose Management and protection audit or Management and protection!',
+                zh_cht: '當前只可以選擇管護盡調崗或者管護盡調審核崗!'
+            },
+            pageData: {},
+        },
+        data: {
+            pageNum: 1,
+            pageSize: 10
+        },
+        //当前页码
+        currentPageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+        },
+
+        custTypeDicData: [], //字典数据
+
+        getDataValue: function (key) {
+            if (!key) {
+                return '';
+            }
+            return this.initValue[key][lang.getLang()];
+        },
+        host: function (obj) {
+            return project.host(obj);
+        },
+		/*
+		getCurrentRoleId: function(){
+		    // 经办-- 可派到 管护尽调岗位 管护尽调审核岗 反洗钱审核岗 aml-audit 反洗钱审批岗位 dd 综合岗
+		    var roleId = ['aml-audit','dd', 'aml-general', 'dd-general'],
+		        currentRoleId = JSON.parse(sessionStorage.getItem('data')).user.roleIds;
+
+		        //尽调 --尽调审核
+		        if(currentRoleId == 'dd'){
+		            roleId = ['dd-officer'];
+		        }
+
+		        //尽调审核 -- 经办
+		        if(currentRoleId == 'dd-officer'){
+		            roleId = ['aml-duty'];
+		        }
+
+		        //反洗钱审核-- 反洗钱审批
+		        if(currentRoleId == 'aml-audit'){
+		            roleId = ['aml-officer'];
+		        }
+
+		        //反洗钱审批 -- 经办
+		        if(currentRoleId == 'aml-officer'){
+		            roleId = ['aml-duty'];
+		        }
+
+		        //经办
+		        if(currentRoleId == 'aml-duty'){
+		            roleId = ['aml-audit','dd', 'aml-general', 'dd-general'];
+		        }
+
+		        if(currentRoleId == 'dd-general' || currentRoleId == 'aml-general'){
+		            roleId = ['aml-duty'];
+		        }
+
+		        globalData.getPostData(roleId);
+
+		},
+		*/
+        // 点击导出按钮下载导出结果方法
+        upload: function () {
+            var data = $.zSearchFn(globalData.data, '#searchData .field');
+            var url = globalData.host()+ '/v1/screenLists/excelsScreenLists?';
+            var userData = JSON.parse(sessionStorage.getItem('data')).user;
+            data = $.extend(data, {
+                roleId: userData.roleIds,
+                userId: userData.userId
+            })
+            for (var i in data) {
+                if (data[i] && i != 'pageSize' && i != 'pageNum') {
+                    url += (i + '=' + data[i] + '&');
+                }
+            }
+            var req = new XMLHttpRequest()
+            var index = layer.load(3, { shade: .1 })
+            req.open('GET', url, true)
+            req.onprogress = function (e) {
+                if (e.target.status == 200) {
+                    layer.close(index)
+                }
+            }
+            req.responseType = 'blob'
+            req.setRequestHeader('Content-Type', 'application/json');
+            req.onload = function () {
+                var data = req.response;
+                var blob = new Blob([data])
+                var blobUrl = window.URL.createObjectURL(blob)
+                var b = document.createElement('a')
+                b.href=blobUrl
+                b.download = '智能检测结果导出.xls'
+                b.click()
+                b=null
+                window.URL.revokeObjectURL(blobUrl)
+            }
+            req.send('')
+            setTimeout(function () {
+                layer.close(index)
+            }, 20000)
+        },
+
+        getCurrentRoleId: function () {
+            // 初审岗aml-duty，复核岗aml-audit，审定岗aml-officer派发流程
+            var roleId = ['666101', '666102', '666102', '666102'],
+                currentRoleId = JSON.parse(sessionStorage.getItem('data')).user.roleIds;
+
+            //复核岗-- 审定岗
+            if (currentRoleId == '666101') {
+                roleId = ['666104'];
+            }
+
+            //审定岗 -- 经办
+            if (currentRoleId == '666104') {
+                roleId = ['666102'];
+            }
+
+            //经办
+            if (currentRoleId == '666102') {
+                roleId = ['666101'];
+                // 
+            }
+            globalData.getPostData(roleId);
+
+        },
+
+        optionBtns: {
+            // 认领
+            claimBtn: function (custId, sdate) {
+                debugger
+                var url = '/v1/distributeJournals/claim',
+                    items;
+
+                globalData.initValue.transListData.list.forEach(function (item) {
+                    if (item.custId == custId && item.sdate == sdate) {
+                        items = item;
+                    }
+                })
+
+                $.zAjax({
+                    url: globalData.host() + url,
+                    type: 'post',
+                    isString: true,
+                    data: {
+                        screentId: items.outId,
+                        roleId: JSON.parse(sessionStorage.getItem('data')).user.roleIds,
+                        operator: JSON.parse(sessionStorage.getItem('data')).user.userId,
+                        operatorName: JSON.parse(sessionStorage.getItem('data')).user.userName
+                    },
+                    success: function (data) {
+                        if (data.code == 0) {
+                            //刷新列表
+                            var pageInfo = globalData.currentPageInfo ? {
+                                pageNum: globalData.currentPageInfo.pageNum,
+                                pageSize: globalData.currentPageInfo.pageSize
+                            } : globalData.data;
+                            pageInfo.screenStatus = $('#transListStatus').val()
+                            globalData.optionBtns.verificationBtn(custId, sdate)
+                            // globalData.getData(pageInfo);
+                        } else {
+                            layer.msg(data.errMsg)
+                        }
+                    }
+                })
+            },
+            // 派发
+            distributeBtn: function (custId, sdate) {
+                $('#dataView').html(template('suspicious_transviewWrap', $.dataLanguage()));
+
+                var title = globalData.getDataValue('distributionTask');
+
+                var items;
+                globalData.initValue.transListData.list.forEach(function (item) {
+                    if (item.custId == custId && item.sdate == sdate) {
+                        items = item;
+                    }
+                });
+                $.zOpen({
+                    title: title,
+                    ele: "#dataView",
+                    callback: function () {
+                        var formData = sessionStorage.getItem('NoTips') ? $.zValidate1("#dataView") : $.zValidate("#dataView");
+
+                        data = {
+                            content: formData.content,
+                            roleId: formData.status,
+                            operator: formData.auditor,
+                            screentId: items.outId,
+                            preId: items.jourId
+                        };
+
+                        // 验证通过
+                        if (formData) {
+                            var url = '/v1/distributeJournals/distribute';
+
+                            $.zAjax({
+                                url: globalData.host() + url,
+                                data: data,
+                                isString: true,
+                                type: 'post',
+                                success: function (data) {
+                                    if (data.code == 0) {
+                                        //刷新列表
+                                        var pageInfo = globalData.currentPageInfo ? {
+                                            pageNum: globalData.currentPageInfo.pageNum,
+                                            pageSize: globalData.currentPageInfo.pageSize
+                                        } : '';
+                                        globalData.getData(pageInfo);
+                                        layer.closeAll();
+                                        layer.msg(data.errMsg, {
+                                            icon: 1
+                                        })
+                                    } else {
+                                        layer.msg(data.errMsg);
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    close: function () {
+                        layer.closeAll();
+                    }
+                })
+
+                globalData.getCurrentRoleId();
+            },
+
+            goto: function (custId, otherInfo, sdate) {
+                var listData = globalData.initValue.transListData.list,
+                    postObj = {},
+                    url = '';
+
+                for (var i = 0; i < listData.length; i++) {
+                    if (listData[i].custId == custId && listData[i].sdate == sdate) {
+                        postObj = listData[i];
+                        break;
+                    }
+                }
+
+                if (otherInfo) {
+                    postObj = $.extend(postObj, otherInfo);
+                }
+
+                //弹窗选择时间段
+                globalData.chooseTimeWrap(function () {
+                    postObj.$router = true;
+                    postObj.$timeSpan = globalData.initValue.pageData.$choosedTime;
+                    url = $.builderUrl('#/suspicious/screening/result', postObj);
+                    //跳转
+                    layer.closeAll();
+                    window.location.hash = url;
+                })
+
+            },
+            //查证
+            verificationBtn: function (custId, sdate) {
+                var otherInfo = {
+                    $notuse: false,
+                    $btnType: 'verificationBtn'
+                }
+
+                this.goto(custId, otherInfo, sdate);
+            },
+            //查看
+            listBtn: function (custId, sdate) {
+                var otherInfo = {
+                    $notuse: true,
+                    $btnType: 'list'
+                }
+
+                this.goto(custId, otherInfo, sdate);
+            },
+            // 尽调
+            investigation: function (custId, sdate) {
+                var otherInfo = {
+                    $notuse: false,
+                    $btnType: 'investigation'
+                }
+
+                this.goto(custId, otherInfo, sdate);
+            },
+            //审批
+            approval: function (custId, sdate) {
+                var otherInfo = {
+                    $notuse: false,
+                    $btnType: 'approval'
+                }
+
+                this.goto(custId, otherInfo, sdate);
+            },
+            //审核
+            auditing: function (custId, sdate) {
+                var otherInfo = {
+                    $notuse: false,
+                    $btnType: 'auditing'
+                }
+
+                this.goto(custId, otherInfo, sdate);
+
+            },
+            timeChange: function () {
+                alert('click')
+            }
+        },
+
+        //获取字典数据
+        getDicData: function (fn) {
+            var url = '/v1/dictDatas/dictDatasSelect/custType';
+
+            //如果存在字典数据了， 直接使用
+            if (globalData.custTypeDicData && globalData.custTypeDicData.length > 0) {
+                fn && fn(globalData.custTypeDicData);
+                return;
+            }
+
+            $.zAjax({
+                url: globalData.host('dicts') + url,
+                success: function (data) {
+                    var result = '';
+
+                    globalData.custTypeDicData = data;
+                    fn && fn(data)
+                }
+            })
+        },
+
+        //将客户类型按照字典数据转换， dicData 字典数据， data 列表数据
+        changeDataToDic: function (dicData, data) {
+            data = data || [];
+            data.forEach(function (item) {
+                for (var i = 0; i < dicData.length; i++) {
+                    if (item.custType == dicData[i].dictValue) {
+                        item.custTypeText = dicData[i].dictLabel;
+                    }
+                }
+            })
+
+            return data;
+        },
+
+        //智能检测列表
+        getData: function (pageData) {
+            if (pageData.screentStatus === '0') {
+                pageData.screentStatus = ''
+            }
+            debugger
+
+            var url = globalData.host() + '/v1/screenLists';
+
+            var userData = JSON.parse(sessionStorage.getItem('data')).user,
+
+                pageData = pageData || globalData.data;
+
+            pageData = $.extend(pageData, {
+                roleId: userData.roleIds,
+                userId: userData.userId
+            });
+
+            $.zAjax({
+                url: url,
+                data: pageData,
+                success: function (data) {
+                    debugger
+                    console.log("data", data)
+                    if (data.code == 0) {
+                        data.pageInfo = data.pageInfo || {};
+                        var total = data.pageInfo && data.pageInfo.total;
+                        //保存当前页码
+                        globalData.currentPageInfo = data.pageInfo;
+
+                        globalData.initValue.transListData = data;
+
+                        globalData.getDicData(function (dicData) {
+                            data.list = globalData.changeDataToDic(dicData, data.list);
+                            // 首次打开页面时，发送智能检测列表请求并渲染
+                            $.zPageMethod({
+                                page: '#Pagination',
+                                url: url,
+                                tp: 'suspicious_autoMonitorTbody',
+                                ele: '#suspicious_autoMonitorTbodyW',
+                                total: total,
+                                data: pageData,
+                                list: data,
+                                success: function (res) {
+                                    globalData.initValue.transListData = res;
+
+                                    //保存当前页码
+                                    globalData.currentPageInfo = res.pageInfo;
+
+                                    var data = {
+                                        list: res.list
+                                    };
+
+                                    globalData.getDicData(function (dicData) {
+                                        data.list = globalData.changeDataToDic(dicData, data.list);
+                                        debugger
+                                        console.log("data", data)
+                                        $('#suspicious_autoMonitorTbodyW').html(template('suspicious_autoMonitorTbody', data));
+
+                                        $.btnPermissions(); //生成表格按钮
+                                    })
+
+                                }
+                            });
+                        })
+
+
+                    } else {
+                        layer.msg(data.des)
+                    }
+
+                }
+            });
+
+            $.btnPermissions(); //生成表格按钮
+
+        },
+
+
+        //分析
+        analysisBtnFn: function (custId) {
+            var listData = globalData.initValue.transListData.list,
+                postObj = {},
+                url = '';
+
+            for (var i = 0; i < listData.length; i++) {
+                if (listData[i].custId == custId) {
+                    postObj = listData[i];
+                    break;
+                }
+            }
+
+            postObj.$router = true;
+            postObj.$timeSpan = this.initValue.pageData.$choosedTime;
+
+            url = $.builderUrl('#/suspicious/screening/result', postObj);
+
+            //跳转
+            layer.closeAll();
+            window.location.hash = url;
+
+        },
+        //未分配任务手动分发
+        distributeTaskFn: function () {
+            layer.closeAll();
+            window.location.hash = '/suspicious/screening/workDistribute';
+        },
+
+        //获取岗位人员数据
+        getPostData: function (roleIds) {
+            var url = '/v1/roles';
+
+            $.zAjax({
+                url: globalData.host('roles') + url,
+                success: function (data) {
+                    if (data.code == 0) {
+                        var arr = [];
+                        if (roleIds) {
+                            data.list.forEach(function (item) {
+                                if (typeof roleIds == 'string') {
+                                    if (item.roleId == roleIds) {
+                                        arr.push(item);
+                                    }
+                                } else {
+                                    roleIds.forEach(function (i) {
+                                        if (item.roleId == i) {
+                                            arr.push(item);
+                                        }
+                                    })
+                                }
+                            })
+
+
+                        } else {
+                            arr = data.list
+                        }
+
+                        $('#suspicious_role').html(globalData.getOptionList(arr, true));
+                    } else {
+                        layer.msg(data.desc);
+                    }
+                }
+            })
+        },
+
+        //获取人员数据
+        getStuffData: function (postData) {
+            var url = '/v1/users';
+
+            $.zAjax({
+                // url: this.host({
+                //     isAddprojectNameSelf: true
+                // }) + url,
+                url: globalData.host('roles') + url,
+                data: {
+                    roleIds: postData,
+                },
+                success: function (data) {
+                    if (data.code == 0) {
+                        $('#suspicious_auditor').html(globalData.getOptionList(data.list, true, 'userId', 'userName'));
+                    } else {
+                        layer.msg(data.desc);
+                    }
+                }
+            })
+        },
+
+        //拼接option
+        getOptionList: function (data, isChange, valueKey, nameKey) {
+            valueKey = valueKey || 'roleId';
+            nameKey = nameKey || 'roleName';
+            var str = isChange ? '<option value="">' + lang.getData('pleaseChoose') + '</option>' : '';
+
+            data.forEach(function (item) {
+                str += '<option value="' + item[valueKey] + '">' + item[nameKey] + '</option>'
+            });
+
+            return str;
+        },
+
+        //弹窗
+        chooseTimeWrap: function (fn) {
+            var title = this.getDataValue('timeWrapTitle');
+
+            $('#dataView').html(template('suspicious_chooseTimeWrap', $.dataLanguage()));
+
+            /* $.zOpen({
+                title: title,
+                ele: '#dataView',
+                callback: function () {
+                    var timeSelectValue = $('#suspicious_time').val(); */
+
+            //存入 pageData， 统一处理pageData
+            globalData.initValue.pageData.$choosedTime = '1';
+
+            if (fn) {
+                fn();
+            }
+            // globalData.analysisBtnFn(custId);
+            /* }
+         })*/
+
+
+            $.zCompositeData(common_params['rbac']['suspiciousTimeChoose'], '#suspicious_time', false);
+        },
+        // 初始化
+        init: function () {
+            var startLayDate, endLayDate;
+            $('#main').prepend(template('suspicious_autoMonitor', $.dataLanguage()));
+
+            this.event();
+
+            if (sessionStorage.getItem('searchData')) {
+                $('#searchData [name="orgNo"]').val(JSON.parse(sessionStorage.getItem('searchData')).orgNo)
+            }
+
+            // 监听开始日期和结束日期，通过ClassName
+            $.dateV('.dateClass')
+
+            //智能交易列表
+            // this.getData();
+
+            $.zCompositeData(common_params['rbac']['suspiciousTransList'], '#searchData [name = "screentStatus"]', false);
+            debugger
+            if(!!sessionStorage.getItem('transListStatus')){
+                $('#transListStatus').val(sessionStorage.getItem('transListStatus'))
+            }else{
+                $('#transListStatus').val('1')  // 将查询表单中的状态设置为未分配
+            }
+            $('#searchBtn').click()
+
+            // 调用日期插件
+            /*startLayDate = laydate.render({
+                elem: '#beginDate',
+                lang: $.getLayDateLang(),
+                done: function (value, date, endDate) {
+                    endLayDate.config.min = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });
+            endLayDate = laydate.render({
+                elem: '#endDate',
+                lang: $.getLayDateLang(),
+                done: function (value, date, endDate) {
+                    startLayDate.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date,
+                    }
+                }
+            });*/
+        },
+        // 事件绑定
+        event: function () {
+            $.btnPermissions();
+            //搜索按钮
+            $('#searchBtn').on('click', function () {
+                // 获取状态并存入sessionStorage
+                sessionStorage.setItem('transListStatus',$('#transListStatus').val())
+
+                var data = $.zSearchFn(globalData.data, '#searchData .field');
+                if (data.orgNo) {
+                    sessionStorage.setItem('searchData', JSON.stringify(data))
+                }
+                globalData.getData(data);
+            });
+
+            // 重置按钮事件
+            $('#resetBtn').click(function(){
+                var data = $.zResetFn(globalData.data,'#searchData .field')
+                $('#transListStatus').val('0')
+                sessionStorage.removeItem('searchData')
+                globalData.getData(data)
+            })
+
+            //生成当日处理情况报告
+			/*       $('#downBtn').on('click', function(){
+                      var str = "",
+                          url = '/v1/screenLists/reportForAutomonitor';
+                      var data = $.zSearchFn(globalData.data,'#searchData .field'),
+                          userData = JSON.parse(sessionStorage.getItem('data')).user;
+      
+                      str = globalData.host() + url + '?beginDate=' + data.beginDate + '&endDate=' + data.endDate + '&screentStatus=' + data.screentStatus + '&roleId=' + userData.roleIds + '&userId=' + userData.userId;
+                      
+                      window.location.href = str;
+                      
+                  }) */
+
+            //人员选择时候
+            $('#suspicious_autoMonitor').delegate('#suspicious_role', 'change', function () {
+                var roleId = $(this).val();
+                $('.suspicious_transviewBox').children().eq(2).show().children('textarea').attr('disabled', false);
+
+                //获取人员列表
+                globalData.getStuffData(roleId);
+
+            });
+
+            $("body").on("input propertychange", "textarea", function () {
+                var len = $(this).val().length;
+                if (len >= 500) {
+                    len = 500;
+                }
+
+                $(this).val($(this).val().substr(0, 500)).siblings().eq(0).html(len);
+            })
+
+        }
+    };
+
+    $(document).ready(function () {
+        globalData.init();
+    })
+</script>
